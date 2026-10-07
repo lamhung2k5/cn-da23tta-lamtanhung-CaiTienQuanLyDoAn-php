@@ -2,11 +2,13 @@
 
 Phase 2, analyzed 2026-10-08. Read alongside [current architecture](current-architecture.md) and [migration plan](../.agent/mvc-refactor-plan.md).
 
+Revised against current PHP source and the SQL pasted by the user. The Phase 1 architecture is a historical snapshot: the current notification API already uses the Phase 5 wrapper/controller. This document records that existing state without extending its migration.
+
 ## Scope and evidence conventions
 
 This map describes important workflows in the checked-in PHP implementation. It is not a proposed design. It covers authentication/recovery, profiles, student and lecturer topics/registrations, leadership review/assignments, administration, content and reports. Static introductions and help pages are outside the detailed map; their entry points remain in the architecture inventory.
 
-**Observed** means supported by the cited source, including its called models/helpers. **Uncertain** means source alone does not establish a runtime outcome, deployed configuration, data-dependent result, or intended policy. No HTTP requests, application executions, database queries, imports, email deliveries or OAuth exchanges were performed. Database writes below describe existing code; they were not executed during this analysis. No application source was changed.
+**Observed** means supported by the cited source, including its called models/helpers. **Uncertain** means source alone does not establish a runtime outcome, deployed configuration, data-dependent result, or intended policy. No HTTP requests, application executions, database queries, imports, email deliveries or OAuth exchanges were performed during this Phase 2 revision. Earlier Phase 5 verification is a separate historical record. Database writes below describe existing code; they were not executed during this analysis. No application source was changed.
 
 URLs below are application-relative physical PHP paths. `G` = `giang_vien`, `S` = `sinh_vien`, `L` = `lanh_dao`. A public/no-guard entry means no application login guard was found on that path, not a statement about external web-server restrictions. Permissions describe code checks, not inferred intended permissions.
 
@@ -22,7 +24,7 @@ Sources: [bootstrap](../bootstrap.php), [configuration](../config/config.php), [
 | Redirects | `redirect(argument)` emits `Location: BASE_URL + argument` and exits. Bare paths such as `login.php` and `duyet_sinh_vien.php` therefore refer to the application root, not automatically the caller's directory. Direct `header('Location: ...')` calls use their literal relative/absolute target. This map records actual arguments; successful navigation for unusual paths is uncertain without HTTP verification. |
 | Validation helpers | `sanitize()` trims, strips tags and HTML-escapes strings, recursively for arrays. Email validation uses `FILTER_VALIDATE_EMAIL`; configured password minimum is 6. HTML constraints are not assumed to be server validation. |
 | Flash/session timing | Flash helpers write a named session key; reads unset it. Timeout helpers exist but bootstrap does not call `validateSession()`. A configured 3600-second timeout is not evidence of centrally enforced expiry. |
-| Persistence | Models use singleton PDO and prepared queries. Base CRUD success is generally statement execution success, not an affected-row check. No live schema, defaults, unique constraints, foreign keys, triggers or cascade behavior were verified. |
+| Persistence | Models use singleton PDO and prepared queries. Base CRUD success is generally statement execution success, not an affected-row check. The user-supplied DDL establishes declared columns/defaults/keys/foreign-key actions (see schema reference below); live schema, triggers, SQL mode, data and execution outcomes were not verified. |
 | Rendering | Pages generally render their own HTML/inline assets and shared includes. For signed-in users, header reads recent personal notifications and unread count. Every section using that header inherits those reads, even if not repeated under its database row. |
 | CSRF | HTML login has explicit token validation. Other handlers below are described from their own code; no global CSRF middleware exists in the inspected bootstrap. A hidden field or helper definition alone does not enforce validation. |
 
@@ -40,6 +42,8 @@ Sources: [HTML login](../auth/login.php), [AJAX login](../auth/login_ajax.php), 
 | DB writes | Conditional `nguoi_dung.mat_khau` rehash. Logout makes no explicit DB write. |
 | Session | Both login paths write the six shared identity fields. HTML regenerates ID, writes `login_time`, rotates `csrf_token`, optionally stores valid `context` as `he_dao_tao`, and consumes `error`/`success` flashes. AJAX does not regenerate ID, initialize time or rotate CSRF. Logout clears all values, expires the cookie and destroys the session. |
 | Redirect/output | HTML redirects to role dashboard, otherwise home; failures render the login form/message. AJAX returns `success`, `message`, and success `redirect` path without sending a navigation redirect. Aliases call `redirect('login.php?role=...')`. Logout calls `redirect('index.php')`. |
+| Transaction boundaries | No explicit transaction around login reads/password rehash; logout has no DB operation. |
+| Dependencies | User/role/profile models and shared identity helpers; session identity is consumed by every role dashboard and shared navigation. |
 | Uncertain | Aliases' helper arguments target root `login.php`, whereas the inspected login file is under `auth/`. Actual browser results and role/profile integrity are unverified; do not silently correct paths in a refactor. |
 
 ## 2. Registration and OTP verification
@@ -56,7 +60,9 @@ Sources: [registration](../auth/register.php), [verification](../auth/verify_otp
 | DB writes | Delete/insert `otp_verification`; verification sets `is_verified=1`; then inserts `nguoi_dung` and corresponding role profile with submitted extra fields. |
 | Session | Registration consumes flashes, writes `registration_email` and `dev_otp`; send success sets `success`, send failure sets `warning` containing the OTP even outside development mode. Verification reads registration context, removes both keys after completed creation and sets success. |
 | Redirect/output | Registration attempts SMTP delivery and continues to `auth/verify_otp.php` even on mail failure. Verification renders OTP errors or redirects to `auth/login.php` after creation. Forms retain existing HTML behavior. |
-| Uncertain | Delivery, schema duplicate constraints and recovery after partial creation are unverified. The intended eligibility for self-registering leadership is unknown. A verified OTP may remain consumed when later account/profile creation fails. |
+| Transaction boundaries | OTP delete/insert, OTP consumption, account insert, and profile insert are separate operations; no encompassing transaction or rollback in these methods/handlers. SMTP follows OTP storage. |
+| Dependencies | Role/user/profile models, OTPModel, OTP constants, SMTP helpers; resulting accounts feed login. OTP schema is absent from the supplied reference (M1). |
+| Uncertain | Delivery and recovery after partial creation are unverified. Supplied DDL declares unique email/profile codes; OTP constraints remain unknown (M1). The intended eligibility for self-registering leadership is unknown. A verified OTP may remain consumed when later account/profile creation fails. |
 
 ## 3. Forgotten password, CAPTCHA and reset variants
 
@@ -71,6 +77,8 @@ Sources: [forgotten password](../auth/forgot_password.php), [CAPTCHA refresh](..
 | DB reads/writes | Read user by email or reset token; write `nguoi_dung.reset_token`, `reset_token_expiry`, then `mat_khau`, then null token/expiry. No DB access in refresh. |
 | Session | Forgot reads `captcha`, writes `reset_token` on successful delivery; when rendering it creates/replaces CAPTCHA. Refresh creates/replaces `captcha` and echoes the 6-character text. Alternate stores GET token into session, reads it on POST, clears it after success. Standard/alternate set `success`; diagnostic uses flash helpers. |
 | Redirect/output | Mail success directly redirects to `BASE_URL + auth/dat-lai-mat-khau.php?token=...`; mail failure renders error but saved token remains. Alternate/standard success send direct relative `Location: login.php`. Diagnostic emits debug text before bootstrap, redirects invalid token with `redirect('login.php')`, and redirects success likewise. |
+| Transaction boundaries | No explicit transaction: token save precedes mail; password update and token clearing are separate writes. CAPTCHA has no DB operation. |
+| Dependencies | User model/reset columns, CAPTCHA session helpers, SMTP; resets affect all login variants using account passwords. |
 | Uncertain | Header behavior after diagnostic output depends on runtime buffering. Mail delivery and expired-token data are unverified. Intended policy for the alternate reset's missing expiry/status checks is unknown; do not treat all reset pages as equivalent. |
 
 ## 4. External identity providers
@@ -88,7 +96,9 @@ These are three different flows. The table describes callback code branches, not
 | DB writes/rules | Creates missing active user with default student role/random hashed password/provider; decides role from session selection, otherwise lecturer profile, then leadership profile, then faculty-list email, otherwise student; updates role and creates missing role profile with `OAUTH_` + 10 characters of email MD5. Retries initial lookup/create once for a recognized dropped-DB error. No active-account check in callback. | Does not create an account; missing user calls `redirect('register.php')`. No active-account check. | Does not create account or profile; rejects missing/locked users. |
 | Session | Start writes 16-byte-hex `oauth_state`; callback regenerates ID, writes identity and `login_time`, unsets state/selected role; no CSRF rotation here | Helper start would write `github_oauth_state`; callback unsets state before checking code, regenerates ID, writes identity/time/`login_method=github`, rotates CSRF, sets success/error | Start writes 32-byte-hex `oauth_state`; callback writes identity/`login_method=microsoft`; does not regenerate ID or initialize login time/CSRF; unsets `microsoft_oauth_state`, leaving used `oauth_state` |
 | Redirect/output | External consent; direct relative login redirect on errors; temporary profile codes go to `update_profile_code.php`, otherwise direct `../<role>/dashboard.php` | External consent if helper callable; errors call `redirect('login.php')`; successful role branches call helper with role-dashboard path or bare `update_profile_code.php`, default home | External consent; errors call helper with bare `login.php`; success uses role-dashboard path, default home |
-| Uncertain/source gaps | No inspected writer of `oauth_selected_role` found; callback can consume an existing value but UI selection cannot be assumed. Role-change intent is unknown. | Bootstrap does not include `config/github_oauth.php`, and neither GitHub endpoint includes it. Start calls helpers defined there; callback references its constants. Also `findByEmail()` returns a base user row while callback reads `vai_tro`/`profile_id` without resolving joins. No live schema confirms those fields. A normal successful flow is not established by this source. | Provider response/credentials are unverified; absent role rows/profiles can affect session completeness. State cleanup mismatch is observed, not corrected. |
+| Transaction boundaries | No encompassing account/role/profile transaction | No DB write/transaction | No DB write/transaction |
+| Dependencies | Provider HTTP/config, account/profile models, faculty file, profile-code page; M2 | Provider HTTP/config (not loaded by visible bootstrap), base-user result gap M3 | Provider HTTP/config, role/profile resolution, dashboards |
+| Uncertain/source gaps | No inspected writer of `oauth_selected_role` found; callback can consume an existing value but UI selection cannot be assumed. Role-change intent is unknown. | Bootstrap does not include `config/github_oauth.php`, and neither GitHub endpoint includes it. Start calls helpers defined there; callback references its constants. Also `findByEmail()` returns a base user row while callback reads `vai_tro`/`profile_id` without resolving joins. The supplied nguoi_dung definition has neither field; the base SELECT returns no joined aliases (M3). A normal successful flow is not established by this source. | Provider response/credentials are unverified; absent role rows/profiles can affect session completeness. State cleanup mismatch is observed, not corrected. |
 
 ## 5. OAuth profile-code completion
 
@@ -102,6 +112,8 @@ Source: [profile-code page](../auth/update_profile_code.php).
 | DB writes | Updates corresponding `ma_sinh_vien`, `ma_giang_vien` or `ma_lanh_dao` by `nguoi_dung_id`. |
 | Session | Reads identity/role; no explicit identity update. |
 | Redirect/output | Renders form/errors; success outputs a JavaScript redirect to `../<role>/dashboard.php` after 2 seconds. |
+| Transaction boundaries | Duplicate check and profile-code update are not wrapped in a transaction. |
+| Dependencies | OAuth callbacks generate temporary codes; role profile tables and dashboard links consume replacements. |
 | Uncertain | Missing profile follows no-update redirect rather than creation. Meaning/format of valid institutional codes is not established; source does not prevent another `OAUTH_` code. |
 
 ## 6. Shared profile and password settings
@@ -117,7 +129,9 @@ Sources: [profile](../profile.php), [profile editing](../edit-profile.php), [pas
 | DB writes | Edit writes `nguoi_dung.ho_ten`, then role profile fields when present; G code can change here, S code is not in this update branch. Password writes Bcrypt `mat_khau`. No multi-write transaction in edit. |
 | Session | Edit changes `ho_ten`, optional nested `user.ho_ten`, writes/consumes `success_message`; password pages do not rotate identity/session on success. |
 | Redirect/output | Profile renders data; edit sends direct `edit-profile.php?mode=<encoded mode>`, then renders new data/message. Password/settings render result inline; no success redirect. Shared header/footer. |
-| Uncertain | Schema-level identifier constraints and partial-edit recovery are unverified. GET `mode` is not evidence of changing authorization. |
+| Transaction boundaries | No explicit transaction: account-name update can persist before profile update fails; password change is a separate update. |
+| Dependencies | User/role/profile models and shared header/footer; updated profile data is reused by reports, account lists, topic display and session navigation. |
+| Uncertain | Supplied DDL declares unique profile identifiers; deployed enforcement and partial-edit recovery are unverified. GET `mode` is not evidence of changing authorization. |
 
 ## 7. Student browsing, dashboard and topic details
 
@@ -132,6 +146,8 @@ Sources: [dashboard](../sinh_vien/dashboard.php), [list](../sinh_vien/danh_sach_
 | DB writes | None in these server handlers. |
 | Session | Reads shared identity/role; invalid detail sets error flash. |
 | Redirect/output | Invalid/missing detail redirects to `sinh_vien/danh_sach_de_tai.php`. Renders dashboard/list/detail and availability/eligibility actions with shared header. List's full-topic grouping does not make full rows available because its model already excludes them. |
+| Transaction boundaries | Read-only handlers; no explicit transaction. Shared header reads are separate. |
+| Dependencies | Student/topic/registration/profile models, shared header; eligibility displays depend on approval states/counters also written by registration/review. |
 | Uncertain | Missing student-profile behavior is not explicitly handled in these paths; runtime notices/data consequences are unverified. UI restrictions must not be substituted for registration-handler validation. |
 
 ## 8. Student registration
@@ -147,7 +163,9 @@ Sources: [registration action](../sinh_vien/dang_ky_de_tai.php), [registration m
 | DB writes | In one model transaction: insert `dang_ky_de_tai` with student/topic/status, increment `de_tai.so_luong_da_dang_ky`. After commit, handler inserts lecturer notification in `thong_bao`. Notification is outside that transaction. |
 | Session | Reads identity/role/name; writes success/error flash. |
 | Redirect/output | Successful registration redirects `sinh_vien/de_tai_cua_toi.php`. Invalid topic/capacity/model failure redirects student list; completed both tracks redirects own topics. No action-page view. |
-| Uncertain | Concurrent capacity enforcement and database defaults/constraints are unverified; code does not establish row locking here. Notification failure does not share registration rollback. Intended pending-vs-approved rule is unknown. |
+| Transaction boundaries | Handler eligibility/lecturer-capacity reads occur before the model transaction. Model begins before duplicate/topic checks, inserts approved registration and increments counter on the shared connection, then commits; caught Exception rolls back. beginTransaction is outside its try; no FOR UPDATE lock is present. Lecturer notification occurs after commit. |
+| Dependencies | Student eligibility, lecturer capacity settings, topic state/counters, registration model and lecturer notification; writes feed own-topics, review, assignments and reports. |
+| Uncertain | Concurrent capacity enforcement and deployed constraint behavior are unverified; supplied DDL declares unique student/topic pairs and foreign keys; code does not establish row locking here. Notification failure does not share registration rollback. Intended pending-vs-approved rule is unknown. |
 
 ## 9. Student own-topics page and rejected-registration deletion
 
@@ -161,6 +179,8 @@ Sources: [own topics](../sinh_vien/de_tai_cua_toi.php), [delete action](../sinh_
 | DB writes | Own-topics updates pending rows to `tu_choi` with generated reason on page load. Delete removes the rejected row. Neither branch adjusts topic counters or generates workflow notifications. |
 | Session | Reads user/role; own-topics uses shared header. Delete uses no result flash. |
 | Redirect/output | Own-topics renders status cards/actions. Delete returns JSON `success`/`message`; guard redirects happen before JSON header, so unauthorized requests are not guaranteed JSON. |
+| Transaction boundaries | No explicit transaction across per-track auto-rejection updates/reload, or across deletion lookup/delete. No counter rollback/reconciliation is coded. |
+| Dependencies | Student/registration/topic joins; review states trigger page-load rejection, rejected rows feed deletion; shared header and deletion JavaScript. |
 | Uncertain | Auto-rejection counter policy and intended cancellation of approved/pending registrations are unknown. Do not describe this endpoint as unrestricted cancellation or decrement counts by assumption. |
 
 ## 10. Lecturer topic creation, editing, submission and deletion
@@ -177,7 +197,9 @@ Sources: [create](../giang_vien/tao_de_tai.php), [edit](../giang_vien/sua_de_tai
 | DB writes | Create inserts topic. Edit updates supplied fields/status/reason; pending edit and submission insert notifications for every leadership profile. Submit updates state only, not approval history. Delete deletes topic only. Bulk submit can partially succeed; no transaction wraps topic updates with notifications. |
 | Session | Reads identity/role/name; sets success/error, sometimes warning. |
 | Redirect/output | Create success: `giang_vien/tao_de_tai.php?loai=...` for `save_continue`, otherwise list by track. Invalid track calls bare `redirect('chon_loai_de_tai.php')`. Edit/submit/delete generally redirect to role list preserving track; failures can render create/edit error or flash and redirect. Bulk submission reports counts/errors. |
-| Uncertain | Missing-profile dereferences, schema deletion effects and duplicate constraints remain unverified. `taoNhieuDeTai()` separately imposes 10 topics and is not called by these endpoints; no inspected call site establishes a bulk-creation UI. Do not merge that unused method's limits into this flow. |
+| Transaction boundaries | No explicit transaction for create/edit/submit/delete. Bulk submission updates and recipient notifications are independent operations; no whole-batch rollback. Topic deletion may cascade under the supplied DDL (see schema relationships). |
+| Dependencies | Lecturer/user profiles, topic model, leadership recipient profiles and notifications; approved topics later feed public/student lists and registrations. |
+| Uncertain | Missing-profile outcomes and deployed deletion effects remain unverified; supplied DDL declares topic-child delete cascades and unique topic codes, but no lecturer/title uniqueness. `taoNhieuDeTai()` separately imposes 10 topics and is not called by these endpoints; no inspected call site establishes a bulk-creation UI. Do not merge that unused method's limits into this flow. |
 
 ## 11. Lecturer lists, dashboards and registration-review presentation
 
@@ -192,6 +214,8 @@ Sources: [topic list](../giang_vien/danh_sach_de_tai.php), [dashboard](../giang_
 | DB writes | No explicit writes in these page handlers. |
 | Session | Identity/role; missing profile or invalid ownership sets error. Shared header adds notification reads. |
 | Redirect/output | Missing profile calls `redirect('../index.php')`; invalid detail redirects lecturer list. Renders existing sidebar/cards/tables, grouped review UI and search/filter controls. |
+| Transaction boundaries | Read-only handlers; no explicit transaction or consistent-snapshot wrapper. |
+| Dependencies | Lecturer/topic/student/registration joins, shared header/sidebar; counts reflect registration and topic-review writes; action controls call separately mapped handlers. |
 | Uncertain | Intended cross-lecturer visibility on leadership pending page is unknown. Its helper's no-filter branch has no initialized `$params`; behavior of that unused branch is not inferred. UI eligibility badges do not establish server approval checks. |
 
 ## 12. Lecturer registration approval/rejection and bulk handlers
@@ -207,6 +231,8 @@ Sources: [single handler](../giang_vien/xu_ly_duyet.php), [bulk handler](../gian
 | Session | Identity/role/user ID; success/error flashes. |
 | Redirect/output | Single success/failure redirects to `giang_vien/dashboard.php` if requested, otherwise pending-review page with track and optional `xem`; empty rejection reason returns dashboard or track view without `xem`. Unknown action returns pending-review page. |
 | Bulk source branches | POST `duyet_hang_loat`/`tu_choi_hang_loat` parses comma-separated `dang_ky_ids` into integers; requires nonempty array and rejection reason when applicable. `duyet_tu_dong` requires either `duyet_csn` or `duyet_cn` equal to `'1'`. Calls `duyetHangLoat`, `tuChoiHangLoat`, `duyetTuDongThongMinh` respectively, then would flash counts and call bare `redirect('duyet_sinh_vien.php')`. |
+| Transaction boundaries | Single model approval/rejection each begin before try, read target, update, and commit; caught Exception rolls back. Approval increments topic counter inside its transaction; rejection does not decrement. Student notification is after commit. Bulk/automatic transaction behavior is unknown because called methods are absent. |
+| Dependencies | Registration/topic models and student notices; approvals feed eligibility, assignments, reports and counters. Bulk depends on three missing model methods. |
 | Uncertain/source gap | Those three called methods are absent from `DangKyDeTaiModel` and `BaseModel`; no alternate definitions were found. Their intended rules/writes/counts are unknown. Do not document a successful bulk/automatic approval algorithm. Single-action ownership policy and repeated-approval counter behavior need verification before migration. |
 
 ## 13. Lecturer registration deletion variants
@@ -221,6 +247,8 @@ Sources: [rejected-row handler](../giang_vien/xu_ly_xoa_dang_ky.php), [same-trac
 | DB reads/writes | Profiles, registration, supplied topic; deletes registration only | Profiles, registration/topic and approved same-track count; deletes registration only |
 | Session | Identity/role and result flashes | Identity/role and result flashes |
 | Redirect/output | Topic detail with supplied `de_tai_id`, or own-topic list on guard failure | Pending-review view preserving track/optional `xem`; exception becomes error flash |
+| Transaction boundaries | No lookup/check/delete transaction | No lookup/check/delete transaction |
+| Dependencies | Lecturer profile, supplied topic, rejected registration; shared lists/counters | Lecturer/topic ownership, approved same-track count; shared lists/counters |
 | Uncertain | Intended pairing/ownership policy is unknown. No explicit counter adjustment or notification. | Count can include an approved target itself. Intended rule and counter reconciliation are unknown; no explicit counter adjustment or notification. |
 
 ## 14. Leadership topic approval/rejection
@@ -236,6 +264,8 @@ Sources: [review page](../lanh_dao/duyet_de_tai.php), [approved page](../lanh_da
 | DB writes | Per-topic transaction: update topic to `da_duyet`, or `tu_choi` plus reason; insert `lich_su_duyet_de_tai` with approver/old/new/reason. Approval does not clear an existing rejection reason. After commit insert lecturer notification. Bulk processes independently, allowing partial success. |
 | Session | Reads identity/role/user ID; writes success/error/warning counts/messages. |
 | Redirect/output | `lanh_dao/duyet_de_tai.php?loai=...` normally; single approve/reject supports requested dashboard target with `gv_id` and `loai`; bulk approve always review page. Unknown action returns review page. Pages render grouped topics, details and action controls. |
+| Transaction boundaries | Each DeTaiModel approval/rejection begins before try, updates topic and inserts history, commits on success, and rolls back caught Exception. No current-state read inside transaction. Notifications occur after commit. Each bulk item commits separately; no enclosing batch transaction. |
+| Dependencies | Topic/history model, leadership user identity, lecturer notifications; publishes topics to public/student lists and registration. |
 | Uncertain | Missing target/foreign-key effects and notifications after committed update are unverified. A pending-only UI is not evidence the handler/model enforces the same rule. |
 
 ## 15. Leadership examiner assignments
@@ -251,6 +281,8 @@ Sources: [assignment page](../lanh_dao/danh_sach_phan_cong.php), [simple handler
 | Rules | Neither handler checks approved status, whether examiner equals supervisor, or an examiner workload limit. Dedicated action does not require `action=phan_cong`. |
 | Session | Both read login/role. No workflow session writes beyond generic unauthorized error; no assignment notification. |
 | Redirect/output | Page renders tables and examiner-selection UI; its inline `saveGiangVienCham()` posts to the simple handler with `action=phan_cong`. Separate `js_phan_cong_cham.js` posts to the dedicated handler with its distinct field names, and updates cells on success. Dedicated handler returns helper JSON including `data:null` and HTTP 400 for `jsonError`; simple handler has its own JSON shape/status defaults. Guards can redirect before JSON headers. |
+| Transaction boundaries | Neither assignment handler wraps existence lookups and update in a transaction; examiner/date changes in the dedicated handler are one UPDATE, while the simple handler changes examiner only. |
+| Dependencies | Approved registration statistics, lecturer/user/student/topic joins, inline and standalone assignment clients; examiner fields feed leadership reports. |
 | Uncertain | Ambiguous duplicate titles can affect rendered IDs; deployed data was not inspected. A standalone client script's presence does not establish that a particular page loads it. Preserve observed call sites and distinct field/date/error contracts. |
 
 ## 16. Leadership user list, account creation and imports
@@ -267,6 +299,8 @@ Sources: [accounts page](../lanh_dao/quan_ly_nguoi_dung.php), [create handler](.
 | Import validation | Upload success and extension allowlist; required row values; email/code duplicate queries. No explicit email-format or password-length check. G resolves supplied/default role and skips unknown role, while still always inserting a lecturer profile. |
 | Import reads/writes | Read users/profiles/roles. Per accepted row, transaction inserts active `nguoi_dung` with `PASSWORD_DEFAULT` hash and corresponding S or G profile, commits and counts success. Duplicate/invalid rows continue; caught errors call rollback and collect errors. File-level import is not one transaction. |
 | Session/redirect/output | Imports consume error/success flashes; results are local variables rendered on same page, no post-success redirect. Parsing reads temporary upload; xlsx/xls both use ZIP/XML first-sheet parser. Forms display counts/row errors. |
+| Transaction boundaries | Leadership create inserts user then profile without a transaction. Each accepted import row starts a transaction after validation/duplicate/role reads, inserts user/profile and commits; caught Exception calls rollback even if an error occurred before begin. No file-wide transaction; earlier rows remain committed. |
+| Dependencies | User/role/profile models, CSV and ZipArchive/SimpleXML parsers, account forms/shared header; new accounts feed auth, role modules and reporting. |
 | Uncertain | Binary `.xls` support is not established by a ZIP/XML parser. Malformed CSV column counts, unreadable workbook and errors before transaction may escape row handling; do not promise graceful failure. Intended unauthenticated imports and G import role/profile mismatch are unknown. |
 
 ## 17. Leadership settings and menu links
@@ -283,11 +317,13 @@ Sources: [settings page](../lanh_dao/cai_dat_thong_so.php), [settings handler](.
 | Default setting | POST `key_name`, `value`; key allowlist: `so_de_tai_toi_da_gv`, `so_de_tai_toi_da_sv`, `cho_phep_dang_ky`, `nam_hoc_hien_tai`, `hoc_ky_hien_tai`. Counts must be numeric >=1 (no integer-only test); permission value must be 0/1. Model updates existing setting only; execution success is not proof a missing key was inserted. |
 | Session/redirect/output | Plan/single-limit branches return JSON when `X-Requested-With` is XMLHttpRequest; normal results use session flashes except silent successful capacity updates, then redirect settings page with `#tab-ke-hoach` or `#tab-gioi-han`. Combined/default paths use redirects/flashes. Menu POST writes JSON for `ket_qua_thi`, `bieu_mau_sinh_vien`, `bieu_mau_giang_vien` (missing fields become empty), reports result inline without redirect. |
 | Validation/menu writes | No server URL validation in menu handler; file write replaces config with its three-field object. No DB write for menu. |
+| Transaction boundaries | No explicit transaction: two plan keys or two per-lecturer setting keys write independently. Single capacity update and subsequent notification are separate. Menu is a filesystem write, not a DB transaction. |
+| Dependencies | Setting model, lecturer profiles/topic counts, notice model, menu JSON/helper; capacity is read by student registration, plan keys by reports, menu links by navigation. |
 | Uncertain | Effective intended topic/student limits differ between storage paths, messages and model enforcement. Search found `cho_phep_dang_ky` in the settings handler but no registration read of that key; do not assume disabling it blocks registration. File permissions, date parsing and missing-key behavior require runtime verification. |
 
 ## 18. Personal notifications and JSON API
 
-Sources: [notification page](../thong_bao.php), [API](../api/notifications.php), [model](../models/ThongBaoModel.php), [header](../includes/header.php).
+Sources: [notification page](../thong_bao.php), [API wrapper](../api/notifications.php), [API controller](../app/controllers/NotificationsController.php), [route table](../config/routes.php), [model](../models/ThongBaoModel.php), [header](../includes/header.php).
 
 | Field | Behavior |
 | --- | --- |
@@ -297,6 +333,8 @@ Sources: [notification page](../thong_bao.php), [API](../api/notifications.php),
 | DB writes | Single mark sets `da_doc=1`; mark-all updates current user's unread rows. No API DB read/write: API currently returns empty notifications and unread count zero. |
 | Session | Page/API read identity; mark-all sets success flash; header reads session user/role for navigation. |
 | Redirect/output | Single mark redirects to stored link via BASE_URL-prefix helper if nonempty, otherwise `thong_bao.php`; unauthorized/not-found row returns page. Mark-all redirects page. API returns JSON success/list/count, or `success:false` and not-logged-in message, without an explicit 401 status. |
+| Transaction boundaries | Page lookup/mark-read and mark-all are not wrapped in a transaction. API performs no DB operation or transaction. |
+| Dependencies | Personal page/header and notification model share recipient rows written by topic/registration/settings actions. API depends only on standard bootstrap/auth helpers and its centralized route/controller; no ThongBaoModel use in the API action. |
 | Uncertain | Stored absolute/relative link navigation must follow actual helper behavior. Do not connect API to model or add mark-read support as part of MVC preservation. |
 
 ## 19. Public notice administration and quick date editor
@@ -311,6 +349,8 @@ Sources: [public-notice admin](../lanh_dao/quan_ly_thong_bao.php), [quick dates]
 | DB reads/writes | Admin reads public recipient-null rows via `getAllThongBaoCongKhai(50)`; add inserts recipient null/read=0/type `thong_bao`, update writes notice fields, delete deletes row, toggle reads row and flips mo/khoa. Quick editor updates dates for supplied ID (not constrained to public recipient), clears to null or sets today/+1 month; lists all public rows. |
 | Session | Admin reads identity and uses shared header; quick editor only inherits bootstrap session. Inline message/error variables, not PRG flashes. |
 | Redirect/output | Both editors render same page after POST. Home calls all-public lookup with limit 10 before role redirect; no date/status filter in that lookup. Database exceptions on home are logged and replaced by empty list. |
+| Transaction boundaries | No explicit transaction: notice writes, status read/toggle, and date editor writes are independent. Home reads do not use a transaction. |
+| Dependencies | ThongBaoModel and recipient-null public rows; home consumes unfiltered public notices. These rows are distinct from project-page content tables. |
 | Uncertain | The model also has active/date-filtered methods, but home/admin use the unfiltered one; intended publication policy is unknown. No automatic inference that closed/expired notices disappear from home. Missing-row writes and DB date acceptance are unverified. |
 
 ## 20. Project page, timeline and notice content
@@ -326,6 +366,8 @@ Sources: [admin editor](../lanh_dao/quan_ly_noi_dung_do_an.php), [public page](.
 | DB writes | Admin updates/inserts page content and notice, inserts/updates/deletes/toggles timeline. `update_page` optionally also writes notice with page status. Public saves timeline or existing/fallback page/notice through same model. These writes have no shared transaction. |
 | Session | Shared identity/role and header notification reads; result messages carried in query parameters for admin PRG, not session flashes. |
 | Redirect/output | Admin redirects directly to `PHP_SELF?tab=...&message=...`/error after POST. Public re-renders after POST. Page inactive if missing content, status exactly `khoa`, before start or after end date; inactive renders lock message instead of timelines. Active shows track timelines/notice/countdowns and L editing controls. Countdown uses deadline 23:59:59 and expired/today/<=7/<=30/later display classes. |
+| Transaction boundaries | No explicit transaction: optional page+notice updates can partially persist; timeline/status reads and writes are separate. |
+| Dependencies | ThongBaoDoAnModel and three content tables; leadership editor/public page share data. Shared header adds personal-notification reads; visibility dates are not evidence of registration enforcement. |
 | Uncertain | Multiple content/notice rows can make first-row selection ambiguous; absent notice dereference in public save path is not verified. Timeline/publication dates control this page, not proven enforcement of student registration deadlines. |
 
 ## 21. Reports and leadership dashboard
@@ -341,6 +383,8 @@ Sources: [CSV export](../giang_vien/xuat_bao_cao_duyet.php), [leadership reports
 | DB writes | None in inspected report/export/dashboard handlers. |
 | Session | Identity/role; missing CSV lecturer profile sets error and calls `redirect('../index.php')`; shared header for ordinary pages. |
 | Redirect/output | CSV sends timestamped `.csv` attachment, UTF-8 BOM, 14 columns including code/name/class/cohort/major/email/topic/track/counters/availability/date/note. Leadership excel sends `.xls` attachment containing HTML tables with BOM, not a native binary workbook. Mode 1 supervisor-only; mode 2 includes examiner and groups by requested supervisor/examiner (unassigned placeholder). `export=pdf` emits printable HTML with print controls/automatic browser print, not a server-generated PDF. Ordinary report renders tables/actions; dashboard cards/statistics. |
+| Transaction boundaries | Read-only reports/dashboard; no explicit transaction providing a consistent snapshot across repeated/count/examiner queries. |
+| Dependencies | Registration/topic/user/profile/setting models and raw joined queries; supervisor/examiner assignments and approval workflows determine output. Browser print/client search and spreadsheet interpretation are external presentation dependencies. |
 | Uncertain | Download rendering, print layout and browser/client sorting behavior were not tested. Displayed date headings do not prove date-filtered report data. No native PDF generator should be introduced under behavior preservation without a separate request. |
 
 ## 22. Public topic directory and lecturer details
@@ -355,7 +399,62 @@ Sources: [public topics](../danh_sach_de_tai_cong_khai.php), [lecturer details](
 | DB writes | None in these handlers. |
 | Session | Public directory inherits bootstrap/shared header; lecturer detail does not initialize/read session identity for access. Home reads role and routes to dashboard after notice read. |
 | Redirect/output | Directory renders filters/sorting/topic cards. Lecturer detail displays explicit connection error page on caught DB failure, missing-email error, faculty fallback or lecturer/topics/statistics; not-found email sends direct `Location: khoa_cntt.php`. |
+| Transaction boundaries | Read-only handlers; no explicit transaction; lecturer detail uses database-only startup, faculty uses standalone session startup. |
+| Dependencies | Topic/lecturer/user joins, faculty fallback file, bootstrap/header for public directory; content reflects leadership topic approval and registration counters. Home uses public notice model before role-dashboard redirect. |
 | Uncertain | Faculty records/live profiles and unexpected topic status/track values are unverified. No claim that GET `filter` grants access to drafts. Static introduction/help/diagnostic content is inventoried but not fully behavior-mapped here. |
+
+## Read-only schema reference and source comparison
+
+The reference called `qldt-schema.sql` in this request is the user's pasted CREATE TABLE script. No physical `docs/database/qldt-schema.sql` was present in the inspected workspace. No SQL file was created, modified, imported or executed. The statements are evidence of declared structure, not proof of deployed structure, populated records, triggers, server SQL mode, or runtime results. AUTO_INCREMENT values do not establish row counts. No production or sample data is needed for this source comparison.
+
+All 13 supplied tables declare an auto-increment `id` primary key, InnoDB, utf8mb4 and utf8mb4_unicode_ci. All declare `created_at` with CURRENT_TIMESTAMP except `cai_dat` and `dang_ky_de_tai`; those instead declare `updated_at` and `ngay_dang_ky`, respectively. Tables with `updated_at` declare CURRENT_TIMESTAMP and ON UPDATE CURRENT_TIMESTAMP. Nullable columns without another stated default below default to NULL; required columns without defaults must be supplied. VARCHAR lengths, enums and uniqueness constrain storage; they do not prove corresponding PHP validation exists.
+
+### Tables, columns, keys and defaults used by workflows
+
+| Table | Declared columns besides common `id`/timestamps | Constraints/defaults and checked source usage |
+| --- | --- | --- |
+| `cai_dat` | `key_name` varchar(100), `value` text, `mo_ta` text | Required unique key_name; nullable value/description. CaiDatModel and settings handler use these fields, including updated_at. A unique key does not create absent setting rows; model update-only success can affect zero rows. No typed value or lecturer FK. |
+| `vai_tro` | `ma_vai_tro` varchar(50), `ten_vai_tro` varchar(100), `mo_ta` text | Required unique role code and required name; nullable description. Login, registration, OAuth and imports resolve actual role rows. DDL supplies no role seed values or fixed numeric role IDs. |
+| `nguoi_dung` | `email` varchar(255), `mat_khau` varchar(255), `ho_ten` varchar(255), `vai_tro_id` int, `trang_thai`, `reset_token` varchar(255), `reset_token_expiry` datetime | Required unique email, required password/name/role FK; nullable enum status active/inactive defaults active. Reset fields nullable; token indexed, not unique. Login/reset/profile/account queries use declared fields. oauth_provider is absent (M2). |
+| `sinh_vien` | `nguoi_dung_id` int, `ma_sinh_vien` varchar(50), `lop` varchar(100), `khoa_hoc` varchar(50), `chuyen_nganh` varchar(255), `so_dien_thoai` varchar(20) | Required individually unique user FK and student code; other profile fields nullable. Profile/import/detail/registration/report queries use these fields. A required FK on a profile does not require every user to have a profile. |
+| `giang_vien` | `nguoi_dung_id` int, `ma_giang_vien` varchar(50), `hoc_ham_hoc_vi` varchar(50), `khoa` varchar(255), `chuyen_mon` varchar(255), `so_dien_thoai` varchar(20), `la_lanh_dao` tinyint, `gioi_han_sv_csn` int, `gioi_han_sv_cn` int | Required individually unique user FK and lecturer code; optional profile fields nullable; leadership flag defaults 0, both nullable capacities default 10. Import/report fields and student registration capacity lookup match. No CHECK enforcing capacity positivity or leadership role consistency. |
+| `lanh_dao` | `nguoi_dung_id` int, `ma_lanh_dao` varchar(50), `chuc_vu` varchar(255), `khoa` varchar(255), `so_dien_thoai` varchar(20) | Required individually unique user FK and leadership code; other fields nullable. Profile creation/recipient lookup/dashboard match. Separate profile tables do not enforce one role profile across all tables. |
+| `de_tai` | `ma_de_tai` varchar(50), `ten_de_tai`/`tieu_de` varchar(500), `mo_ta` text, `giang_vien_id` int, `he_dao_tao`, `so_luong_sv` int, `so_luong_da_dang_ky` int, `trang_thai`, `ly_do_tu_choi` text, `chuyen_nganh` varchar(255), `ngon_ngu_cong_cu`/`cong_nghe`/`yeu_cau_sinh_vien`/`ghi_chu` text, `nam_hoc`/`hoc_ky` varchar(20) | Nullable unique ma_de_tai; required title/name/description/lecturer FK and track enum co_so_nganh/chuyen_nganh; required slots default 1, nullable registered counter default 0; nullable status enum nhap/cho_duyet/da_duyet/tu_choi defaults nhap; remaining fields nullable. Creation writes both titles. No unique title/lecturer pair, capacity CHECK, counter trigger, or automatic status history declared. |
+| `dang_ky_de_tai` | `sinh_vien_id`/`de_tai_id` int, `trang_thai`, `ly_do_tu_choi` text, `ngay_dang_ky` timestamp, `ngay_duyet` timestamp, `nguoi_duyet_id`/`giang_vien_cham_id` int, `ngay_phan_cong_cham` timestamp, `ghi_chu` text | Required student/topic FKs, unique pair `(sinh_vien_id,de_tai_id)` across all states; nullable status enum cho_duyet/da_duyet/tu_choi defaults cho_duyet. Registration timestamp required/current; other date/reviewer/examiner/note fields nullable. Model explicitly inserts da_duyet, overriding default (a code/default difference, not an invalid enum). No per-track unique registration or counter maintenance declared. |
+| `lich_su_duyet_de_tai` | `de_tai_id`/`nguoi_duyet_id` int, `trang_thai_cu`/`trang_thai_moi` varchar(50), `ly_do` text | Required topic/user FKs; old/new/reason nullable; statuses are varchar, not enums. DeTaiModel history writes match; recorded old cho_duyet is a PHP constant, not fetched state. |
+| `thong_bao` | `nguoi_nhan_id` int, `tieu_de` varchar(255), `noi_dung` text, `loai`, `da_doc` tinyint, `link` varchar(500), `loai_thong_bao` varchar(50), `ngay_bat_dau`/`ngay_ket_thuc` date, `trang_thai` | Nullable recipient FK permits public notices; title/body required. Nullable type enum info/success/warning/danger defaults info, read flag defaults 0, classification defaults thong_bao, link/dates nullable. Required status enum mo/khoa defaults mo. Recipient/read indexes support header/page queries. No date-order/URL validation or automatic expiration declared; public lookup filtering remains method-specific. |
+| `thong_bao_do_an_content` | `page_title` varchar(500), `subtitle` text, `date_badge` varchar(100), `trang_thai`, `ngay_bat_dau`/`ngay_ket_thuc` date | Nullable title defaults 'Thông báo đồ án'; subtitle/badge/dates nullable; required mo/khoa defaults mo. ContentModel reads/updates match. No singleton constraint or FK to notice/timeline. |
+| `thong_bao_do_an_notice` | `tieu_de` varchar(500), `noi_dung` text, `trang_thai` | Required title; nullable body; required mo/khoa defaults mo. NoticeModel queries match. No singleton constraint or parent content FK. |
+| `thong_bao_do_an_timeline` | `loai` varchar(50), `thu_tu` int, `tieu_de` varchar(500), `noi_dung` text, `ngay`/`thang`/`nam` int, `yeu_cau` text, `trang_thai` | Required type defaults dang_ky, required order defaults 1, required title; body/date parts/requirements nullable; required mo/khoa defaults mo. Timeline queries use declared fields. No unique track/order, valid-calendar CHECK, track enum, or parent FK. PHP joins admin requirement entries with a pipe. |
+
+### Declared relationships and workflow effects
+
+| Child → parent | Declared foreign-key action | Source relationship / implication |
+| --- | --- | --- |
+| `nguoi_dung.vai_tro_id` → `vai_tro.id` | No explicit delete/update action | Login/account/provider joins match; role existence is a database dependency. DDL does not ensure user role matches a particular profile table. |
+| Each of `sinh_vien`, `giang_vien`, `lanh_dao`.`nguoi_dung_id` → `nguoi_dung.id` | ON DELETE CASCADE | Profile/account joins match; deleting a parent user can propagate through profiles. No user-delete workflow is inferred from the relationship. |
+| `de_tai.giang_vien_id` → `giang_vien.id` | ON DELETE CASCADE | Topic ownership/list/report joins match. Lecturer deletion can cascade to topics. |
+| `dang_ky_de_tai.sinh_vien_id` → `sinh_vien.id`; `de_tai_id` → `de_tai.id` | Both ON DELETE CASCADE | Registration joins match. A topic DELETE can delete registrations even though the PHP deletion handler only issues one topic DELETE; it checks the stored counter rather than proving no child records. |
+| `dang_ky_de_tai.nguoi_duyet_id` → `nguoi_dung.id` | No explicit action | Approval passes session user ID, not lecturer-profile ID. Referenced users can constrain parent deletion. |
+| `dang_ky_de_tai.giang_vien_cham_id` → `giang_vien.id` | ON DELETE SET NULL; ON UPDATE CASCADE | Assignment uses lecturer-profile IDs. FK clears examiner on parent deletion, but declares no update to assignment date. Both assignment column/date exist. |
+| `lich_su_duyet_de_tai.de_tai_id` → `de_tai.id`; `nguoi_duyet_id` → `nguoi_dung.id` | Topic ON DELETE CASCADE; user no explicit action | History inserts match topic/user identifiers; topic deletion can remove history. |
+| `thong_bao.nguoi_nhan_id` → `nguoi_dung.id` | ON DELETE CASCADE | Workflow helpers translate student/lecturer profile IDs to user IDs; personal notification ownership uses user ID. NULL-recipient public notices have no recipient parent. |
+
+Where no action is explicit, the reference does not declare CASCADE or SET NULL; InnoDB's default restrictive behavior applies if deployed as written. Actual delete outcomes can also depend on other referencing rows. No such operation was executed. No FK couples settings or the three project-content tables; their links/selection policies are PHP conventions.
+
+### Separate mismatch report
+
+These findings compare source to the supplied reference. They do not authorize fixes or prove the live database has the same omissions.
+
+| ID / classification | Source evidence | Reference discrepancy and affected boundary |
+| --- | --- | --- |
+| M1: missing table definition | [OTPModel](../models/OTPModel.php) uses table otp_verification; inherited CRUD needs id; create/verify/cleanup use email, otp_code, vai_tro, data, expires_at, is_verified. | None of the 13 supplied definitions describes this table. OTP storage/consumption required by registration cannot be schema-verified; its PK/defaults/constraints/FKs remain unknown. Do not claim the live table is absent or invent a definition. |
+| M2: missing write column | [NguoiDungModel::createOAuthUser](../models/NguoiDungModel.php) passes oauth_provider to BaseModel::insert; [Google callback](../auth/google_callback.php) calls this for missing users. | nguoi_dung has no oauth_provider column. The constructed INSERT is incompatible with this definition if deployed exactly as supplied. Existing-user branch does not execute that INSERT. The model catches Exception and returns failure; successful new-account creation is not established. |
+| M3: result-field mismatch | [GitHub callback](../auth/github_callback.php) reads existingUser['vai_tro'] and ['profile_id']; [findByEmail](../models/NguoiDungModel.php) delegates to base-user lookup without joins. | Neither is a nguoi_dung column or a SELECT alias in that lookup. ma_vai_tro belongs to vai_tro; profile IDs belong to separate tables. This is a schema/result-contract mismatch, not evidence for adding columns. Callback handling beyond these unresolved fields remains uncertain. |
+
+No additional concrete missing-table/column mismatch was identified in the inspected workflow SQL/model payloads. This is a manual source review, not a guarantee for every dynamic SQL string. Selected aliases such as con_lai, ten_giang_vien, ten_sinh_vien, totals and joined role codes are computed results, not missing physical columns. Dynamic setting keys are values in cai_dat, not columns. Missing bulk model methods, contradictory limits, missing guards and redirect aliases are source/behavior inconsistencies, not schema mismatches.
+
+DDL confirms uniqueness of emails, role codes, profile codes/user links and registration pairs; it does not resolve concurrency or partial commits. No database constraint enforces one approved topic per student/track, synchronizes topic counters, limits lecturer workload, validates menu URLs, or restricts account creation to an intended role policy. The supplied script contains no trigger definitions. Absence of such definitions in this reference is not proof that a deployed server has no triggers.
 
 ## Explicit uncertainties and preservation checkpoints
 
@@ -363,13 +462,13 @@ These are findings to verify before migrating an affected module, not fixes auth
 
 | ID | Uncertain or conflicting behavior | Evidence / preservation implication |
 | --- | --- | --- |
-| U1 | Live schema/data and record integrity | Defaults, indexes, cascades, triggers, role/profile presence and date coercion were not queried. Do not invent schema dependencies or missing-profile business rules. |
+| U1 | Live schema/data and record integrity | Declared defaults/indexes/cascades are established by the supplied DDL below; live schema agreement, triggers, role/profile presence and date coercion were not queried. Do not invent schema dependencies or missing-profile business rules. |
 | U2 | Redirect resolution | Helpers always prefix BASE_URL, while multiple auth/lecturer callers use bare names or `../`; direct headers coexist. Keep actual emitted target distinct from an intended destination. |
 | U3 | Topic limit intent | Create model enforces 100/track; unused bulk-create model enforces 10; settings use different keys/columns; page comments say unlimited. Model path, not comment, defines observed single-create behavior. |
 | U4 | Registration lifecycle/counters | Create writes approved and increments; approval increments again without pending check; rejection/deletion/own-page auto-rejection do not decrement. Source establishes these effects, not intended reconciliation. |
 | U5 | Intended authorization | Single registration approval lacks owner validation; deletion variants differ; leadership pending page allows G/L; imports/date editor have no guard. Do not infer intended privileges from folder names. |
 | U6 | Missing bulk model methods | Three bulk/automatic-review calls have no implementation in inspected model/inheritance. Successful writes/output cannot be mapped beyond the call boundary. |
-| U7 | GitHub wiring/user fields | Visible include path does not load GitHub helpers/constants; callback expects unresolved role/profile fields. Runtime success depends on unverified external initialization/schema. |
+| U7 | GitHub wiring/user fields | Visible include path does not load GitHub helpers/constants; callback expects unresolved role/profile fields. Runtime success depends on unresolved initialization/result fields; supplied schema confirms those fields are absent from the base user table (M3). |
 | U8 | Provider outcomes | OAuth availability, role-selection writer, network responses and provider credentials were not exercised. Google/Microsoft/GitHub branches differ in active checks, account creation and session handling. |
 | U9 | Recovery/OTP failure handling | Alternate token reset lacks model expiry/status check; OTP consumed before account creation; debug output may affect headers; mail delivery not verified. Preserve distinctions. |
 | U10 | Publication/registration timing | Home uses unfiltered notices; project page has visibility dates; registration handler does not read global permission key. No source evidence for a unified registration-window rule. |
@@ -379,6 +478,6 @@ These are findings to verify before migrating an affected module, not fixes auth
 
 ## Phase 2 validation
 
-All ten plan dimensions are covered for important modules: entry points, roles, inputs, validation, business rules, database reads/writes, session effects, redirects and output. Evidence includes endpoint preparation/action branches, called model methods, shared helpers, selected render-time queries and client/report output paths. Missing implementations and data/environment-dependent outcomes are explicitly labeled instead of filled in.
+All twelve requested dimensions are covered for important modules, including explicit transaction-boundary and dependency rows: entry points, roles, inputs, validation, business rules, database reads/writes, session effects, redirects output, transaction boundaries and dependencies. Evidence includes endpoint preparation/action branches, called model methods, shared helpers, selected render-time queries and client/report output paths. Missing implementations and data/environment-dependent outcomes are explicitly labeled instead of filled in.
 
-Verification is documentation-only: check source links, required coverage, whitespace, Phase 2-only plan update and final changed-file scope. Application source and the pre-existing architecture-document edits remain untouched. No runtime behavior verification is claimed, and Phase 3 or later work was not executed.
+Verification is documentation-only: check source links, required coverage, whitespace, Phase 2-only plan update and final changed-file scope. Application source and the pre-existing architecture-document edits remain untouched. No runtime behavior verification is claimed for this revision. Existing Phase 3-5 implementation/status entries are historical and unchanged; this revision performs Phase 2 only.

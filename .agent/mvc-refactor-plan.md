@@ -41,8 +41,8 @@ docs/current-architecture.md
 
 Status: COMPLETE
 
-Completed: 2026-10-08. Existing behavior mapped in `docs/behavior-map.md`.
-Validation: source inspection and documentation checks; uncertainties explicitly recorded; no application source changes.
+Completed: 2026-10-08. Existing behavior mapped in `docs/behavior-map.md`; revised against current PHP and the user-supplied read-only SQL reference, including declared tables/columns, keys, defaults, constraints, relationships and a separate mismatch report.
+Validation: source inspection and documentation coverage/link/whitespace/scope checks; all 22 workflow sections include transaction boundaries and dependencies; missing OTP table definition, OAuth write column, and GitHub result-field mismatch explicitly reported. No application source changes, SQL execution/modification, database operations, or production/sample data required.
 
 For important modules identify:
 
@@ -53,9 +53,12 @@ For important modules identify:
 - business rules;
 - database reads;
 - database writes;
+- transaction boundaries;
 - session reads/writes;
 - redirects;
-- views/output.
+- views/output;
+- dependencies on other modules;
+- separate source/schema mismatch report.
 
 Output:
 
@@ -67,8 +70,8 @@ docs/behavior-map.md
 
 Status: COMPLETE
 
-Completed: 2026-10-08. Minimal native-PHP target architecture designed in `docs/mvc-architecture.md`.
-Validation: documentation/source review and link/scope checks; no application source or business modules modified.
+Completed: 2026-10-08. Revised `docs/mvc-architecture.md` for the current repository: reuses existing dispatcher/router/view/route table and notification API pilot; defines layer ownership, URL/auth/session/schema/UI preservation, incremental order with dependencies/risk, and explicit M1-M3/U1-U13 preservation/verification gates.
+Validation: current infrastructure/source and supplied read-only schema review; ten requested architecture topics and all 16 checkpoints covered; documentation link/whitespace/scope checks passed. No application source, routes, SQL, database, or business modules modified. Existing Phase 4/5 status retained; no later phase executed.
 
 Define:
 
