@@ -1,0 +1,2 @@
+# Internal PHP files are included through existing public endpoint wrappers.
+Require all denied

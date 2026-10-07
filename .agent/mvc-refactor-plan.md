@@ -91,7 +91,11 @@ Do not migrate business modules during this phase.
 
 ## Phase 4 — MVC Infrastructure
 
-Status: NOT STARTED
+Status: COMPLETE
+
+Completed: 2026-10-08. Added the front controller, exact-path router, isolated view renderer, empty route table, and internal Apache access rule defined in docs/mvc-architecture.md.
+Validation: PHP 8.2 syntax checks passed for all four new PHP files; isolated routing, dispatch, view isolation/path confinement, and pre-bootstrap 404 checks passed. Local Apache returned 403 for internal PHP files and 200 for an existing static asset.
+Scope: no business modules migrated; existing endpoints, bootstrap, database schema, and application behavior were not changed. Business flows were not exercised against the database.
 
 Create only the minimum infrastructure required for MVC.
 
