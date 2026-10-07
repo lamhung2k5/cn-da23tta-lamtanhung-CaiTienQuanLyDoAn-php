@@ -1,0 +1,398 @@
+/* ===== ENHANCED BUTTON STYLES FOR QUAN LY NOI DUNG DO AN ===== */
+
+/* Override existing button styles with modern design */
+
+/* Primary buttons - Form submissions */
+.btn-primary,
+.btn-modern.btn-primary-modern,
+button[type="submit"].btn-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%) !important;
+    border: none !important;
+    color: white !important;
+    padding: 0.75rem 2rem !important;
+    border-radius: 0.5rem !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    text-decoration: none !important;
+}
+
+.btn-primary:hover,
+.btn-modern.btn-primary-modern:hover,
+button[type="submit"].btn-primary:hover {
+    background: linear-gradient(135deg, #0b5ed7 0%, #0a58ca 100%) !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 20px rgba(13, 110, 253, 0.4) !important;
+    color: white !important;
+}
+
+.btn-primary::before,
+.btn-modern.btn-primary-modern::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: -100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent) !important;
+    transition: left 0.5s !important;
+}
+
+.btn-primary:hover::before,
+.btn-modern.btn-primary-modern:hover::before {
+    left: 100% !important;
+}
+
+/* Success buttons - Add actions */
+.btn-success,
+.btn-modern.btn-success-modern {
+    background: linear-gradient(135deg, #198754 0%, #157347 100%) !important;
+    border: none !important;
+    color: white !important;
+    padding: 0.6rem 1.5rem !important;
+    border-radius: 0.5rem !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3) !important;
+    text-decoration: none !important;
+}
+
+.btn-success:hover,
+.btn-modern.btn-success-modern:hover {
+    background: linear-gradient(135deg, #157347 0%, #146c43 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(25, 135, 84, 0.4) !important;
+    color: white !important;
+}
+
+/* Warning buttons - Edit actions */
+.btn-warning,
+.btn-warning-modern,
+.btn-sm.btn-warning-modern {
+    background: linear-gradient(135deg, #ffc107 0%, #ffca2c 100%) !important;
+    border: none !important;
+    color: #000 !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 0.5rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 3px 10px rgba(255, 193, 7, 0.3) !important;
+    text-decoration: none !important;
+    padding: 0 !important;
+}
+
+.btn-warning:hover,
+.btn-warning-modern:hover,
+.btn-sm.btn-warning-modern:hover {
+    background: linear-gradient(135deg, #ffca2c 0%, #ffc720 100%) !important;
+    transform: translateY(-2px) scale(1.05) !important;
+    box-shadow: 0 6px 16px rgba(255, 193, 7, 0.4) !important;
+    color: #000 !important;
+}
+
+/* Danger buttons - Delete actions */
+.btn-danger,
+.btn-danger-modern,
+.btn-sm.btn-danger-modern {
+    background: linear-gradient(135deg, #dc3545 0%, #bb2d3b 100%) !important;
+    border: none !important;
+    color: white !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 0.5rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 3px 10px rgba(220, 53, 69, 0.3) !important;
+    text-decoration: none !important;
+    padding: 0 !important;
+}
+
+.btn-danger:hover,
+.btn-danger-modern:hover,
+.btn-sm.btn-danger-modern:hover {
+    background: linear-gradient(135deg, #bb2d3b 0%, #b02a37 100%) !important;
+    transform: translateY(-2px) scale(1.05) !important;
+    box-shadow: 0 6px 16px rgba(220, 53, 69, 0.4) !important;
+    color: white !important;
+}
+
+/* Light buttons - Toggle actions */
+.btn-light,
+.btn-light-modern,
+.btn-sm.btn-light-modern {
+    background: linear-gradient(135deg, #6c757d 0%, #5c636a 100%) !important;
+    border: none !important;
+    color: white !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 0.5rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 3px 10px rgba(108, 117, 125, 0.3) !important;
+    text-decoration: none !important;
+    padding: 0 !important;
+}
+
+.btn-light:hover,
+.btn-light-modern:hover,
+.btn-sm.btn-light-modern:hover {
+    background: linear-gradient(135deg, #5c636a 0%, #565e64 100%) !important;
+    transform: translateY(-2px) scale(1.05) !important;
+    box-shadow: 0 6px 16px rgba(108, 117, 125, 0.4) !important;
+    color: white !important;
+}
+
+/* Button groups - Enhanced spacing */
+.btn-group {
+    display: flex !important;
+    gap: 0.5rem !important;
+    align-items: center !important;
+}
+
+.btn-group .btn {
+    margin-left: 0 !important;
+    border-radius: 0.5rem !important;
+}
+
+/* Tab navigation enhancement */
+.nav-tabs .nav-link {
+    border: none !important;
+    border-radius: 0.5rem 0.5rem 0 0 !important;
+    padding: 0.75rem 1.5rem !important;
+    font-weight: 600 !important;
+    color: #6c757d !important;
+    background: #f8f9fa !important;
+    margin-right: 0.25rem !important;
+    transition: all 0.3s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.nav-tabs .nav-link:hover {
+    background: #e9ecef !important;
+    color: #495057 !important;
+    transform: translateY(-2px) !important;
+}
+
+.nav-tabs .nav-link.active {
+    background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3) !important;
+}
+
+.nav-tabs .nav-link.active::before {
+    content: '' !important;
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 3px !important;
+    background: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Modal buttons */
+.modal-footer .btn {
+    padding: 0.6rem 1.5rem !important;
+    border-radius: 0.5rem !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Focus states for accessibility */
+.btn:focus,
+.btn-primary:focus,
+.btn-success:focus,
+.btn-warning:focus,
+.btn-danger:focus,
+.btn-light:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25) !important;
+}
+
+/* Loading state */
+.btn-loading {
+    position: relative !important;
+    pointer-events: none !important;
+    opacity: 0.8 !important;
+}
+
+.btn-loading::after {
+    content: '' !important;
+    position: absolute !important;
+    width: 16px !important;
+    height: 16px !important;
+    top: 50% !important;
+    left: 50% !important;
+    margin-left: -8px !important;
+    margin-top: -8px !important;
+    border: 2px solid transparent !important;
+    border-top-color: currentColor !important;
+    border-radius: 50% !important;
+    animation: btn-loading-spin 1s linear infinite !important;
+}
+
+@keyframes btn-loading-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Hover effects for timeline items */
+.timeline-item {
+    transition: all 0.3s ease !important;
+    padding-left: 1.5rem !important;
+    margin-bottom: 2rem !important;
+    position: relative !important;
+}
+
+.timeline-item:hover {
+    transform: translateX(8px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Status badges enhancement */
+.status-badge {
+    padding: 0.35rem 0.75rem !important;
+    border-radius: 1rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+}
+
+.status-active {
+    background: linear-gradient(135deg, #198754 0%, #157347 100%) !important;
+    color: white !important;
+}
+
+.status-inactive {
+    background: linear-gradient(135deg, #6c757d 0%, #5c636a 100%) !important;
+    color: white !important;
+}
+
+/* Card enhancements */
+.card-modern {
+    border: 1px solid #dee2e6 !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+    margin-bottom: 2rem !important;
+    overflow: hidden !important;
+    transition: all 0.3s ease !important;
+}
+
+.card-modern:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-2px) !important;
+}
+
+.card-header-modern {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    border-bottom: 1px solid #dee2e6 !important;
+    padding: 1rem 1.5rem !important;
+    font-weight: 600 !important;
+    color: #495057 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.card-body-modern {
+    padding: 1.5rem !important;
+}
+
+/* Form enhancements */
+.form-control-modern {
+    border: 2px solid #e9ecef !important;
+    border-radius: 0.5rem !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 1rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.form-control-modern:focus {
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
+    outline: none !important;
+}
+
+.form-label-modern {
+    font-weight: 600 !important;
+    color: #495057 !important;
+    margin-bottom: 0.75rem !important;
+    display: block !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .btn-primary,
+    .btn-success {
+        padding: 0.5rem 1rem !important;
+        font-size: 0.9rem !important;
+    }
+    
+    .btn-warning,
+    .btn-danger,
+    .btn-light,
+    .btn-sm.btn-warning-modern,
+    .btn-sm.btn-danger-modern,
+    .btn-sm.btn-light-modern {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 0.9rem !important;
+    }
+    
+    .nav-tabs .nav-link {
+        padding: 0.5rem 1rem !important;
+        font-size: 0.85rem !important;
+    }
+    
+    .timeline-item:hover {
+        transform: translateX(4px) !important;
+    }
+}
+
+/* Animation classes */
+.fade-in-up {
+    animation: fadeInUp 0.5s ease-out !important;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Print styles */
+@media print {
+    .btn,
+    .btn-group,
+    .nav-tabs {
+        display: none !important;
+    }
+}
