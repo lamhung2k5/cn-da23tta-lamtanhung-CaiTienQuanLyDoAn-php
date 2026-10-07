@@ -132,7 +132,11 @@ Process:
 
 ## Phase 6 — Incremental Migration
 
-Status: NOT STARTED
+Status: IN PROGRESS
+
+First module COMPLETE: 2026-10-08, `profile.php` only. Added its fixed URL wrapper/route, `ProfileController::show()`, trusted profile view, shared header-data preparation and pure header/flash partials. Existing models, authentication/session helpers, legacy includes, database schema, and excluded account endpoints remain unchanged.
+Validation: syntax checks passed for all seven changed/new PHP files; 69 legacy/MVC HTML/query/session/failure comparisons and 14 isolated signed-in HTTP comparisons passed; actual Apache anonymous redirect/cookie response matched the baseline. Behavior-map section 6 and shared header/session contracts preserved, including original notification reads, navigation precedence and header BOM/flash timing. Evidence and limits: `docs/phase6-profile-verification.md`.
+No other endpoint migrated. Phase 6 remains in progress; further modules require their own inspection, verification and authorization.
 
 Determine migration order based on dependencies.
 
