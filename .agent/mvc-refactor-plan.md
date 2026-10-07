@@ -65,7 +65,10 @@ docs/behavior-map.md
 
 ## Phase 3 — Target MVC Architecture
 
-Status: NOT STARTED
+Status: COMPLETE
+
+Completed: 2026-10-08. Minimal native-PHP target architecture designed in `docs/mvc-architecture.md`.
+Validation: documentation/source review and link/scope checks; no application source or business modules modified.
 
 Define:
 
