@@ -105,7 +105,12 @@ The legacy application must remain operational.
 
 ## Phase 5 — Pilot Module
 
-Status: NOT STARTED
+Status: COMPLETE
+
+Completed: 2026-10-08. Migrated only `api/notifications.php` to its existing URL wrapper, one centralized route, and `NotificationsController::api()`.
+Selection: architecture dependency map identifies this JSON placeholder as independent of database-backed notification workflows; target architecture section 12 recommends it as a low-risk pilot.
+Validation: PHP syntax checks; 36 legacy/MVC behavior comparisons with real bootstrap/helpers and isolated sessions; retained exception-response comparison; local Apache anonymous response/header/cookie checks. All passed against behavior-map section 18. Details and verification limits: `docs/phase5-verification.md`.
+Scope: empty notification response, custom login failure, HTTP methods/status, sessions, database behavior, and original URL preserved. No other module migrated; no schema, UI, models, helpers, or bootstrap changes.
 
 Select one low-risk module.
 
