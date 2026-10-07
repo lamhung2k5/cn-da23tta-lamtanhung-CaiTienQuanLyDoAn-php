@@ -39,7 +39,10 @@ docs/current-architecture.md
 
 ## Phase 2 — Behavior Mapping
 
-Status: NOT STARTED
+Status: COMPLETE
+
+Completed: 2026-10-08. Existing behavior mapped in `docs/behavior-map.md`.
+Validation: source inspection and documentation checks; uncertainties explicitly recorded; no application source changes.
 
 For important modules identify:
 
