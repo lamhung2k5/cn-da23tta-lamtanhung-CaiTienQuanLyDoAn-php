@@ -24,7 +24,7 @@ if ($isInfinityFree) {
     // =============================================
     define('DB_HOST', 'sql309.infinityfree.com');
     define('DB_PORT', '3306');
-    define('DB_NAME', 'qldt');
+    define('DB_NAME', 'if0_42542969_qldt_database');
     define('DB_USER', 'if0_42542969');
     define('DB_PASS', 'thachkongsaoane');
     define('DB_CHARSET', 'utf8mb4');
