@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/environment.php';
 /**
  * DATABASE CONFIGURATION
  * Cấu hình kết nối database MySQL
@@ -26,7 +27,7 @@ if ($isInfinityFree) {
     define('DB_PORT', '3306');
     define('DB_NAME', 'if0_42542969_qldt_database');
     define('DB_USER', 'if0_42542969');
-    define('DB_PASS', 'thachkongsaoane');
+    define('DB_PASS', getenv('PRODUCTION_DB_PASS') ?: '');
     define('DB_CHARSET', 'utf8mb4');
 } else {
     // =============================================
@@ -34,7 +35,7 @@ if ($isInfinityFree) {
     // =============================================
     define('DB_HOST', '127.0.0.1'); // 127.0.0.1 ép TCP, tránh lỗi UNIX socket
     define('DB_PORT', '3306');
-    define('DB_NAME', 'qldt');
+    define('DB_NAME', 'qldt_database');
     define('DB_USER', 'root');      // user mặc định XAMPP
     define('DB_PASS', '');           // mật khẩu mặc định XAMPP (rỗng)
     define('DB_CHARSET', 'utf8mb4');

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/environment.php';
 /**
  * SYSTEM CONFIGURATION
  * Cấu hình chung của hệ thống
@@ -51,7 +52,7 @@ define('UPLOAD_PATH', ROOT_PATH . 'uploads/');
 define('SMTP_HOST', 'smtp.gmail.com');
 define('SMTP_PORT', 587);
 define('SMTP_USER', 'maihongloi2003@gmail.com');
-define('SMTP_PASS', 'kbfnlgljqlijqwxi');  // App Password 16 ký tự (bỏ dấu cách)
+define('SMTP_PASS', getenv('SMTP_PASS') ?: '');  // App Password 16 ký tự (bỏ dấu cách)
 define('SMTP_FROM', 'maihongloi2003@gmail.com');  // Dùng cùng email với SMTP_USER
 define('SMTP_FROM_NAME', 'Hệ thống QLĐT - TVU');
 

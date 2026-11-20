@@ -145,3 +145,8 @@ Mọi đóng góp nhằm hoàn thiện hệ thống đều được hoan nghênh
 ## 📝 Bản Quyền (License)
 
 Dự án phát triển bởi **Khoa Công nghệ Thông tin - Đại học Trà Vinh**. Bản quyền thuộc về tác giả.
+
+## Cấu hình riêng khi lấy nhánh baseline
+
+Chạy `composer install` để cài thư viện theo `composer.lock`.
+Sao chép `config/local.example.php` thành `config/local.php`, rồi điền mật khẩu SMTP và DB production nếu cần. File `config/local.php` được Git bỏ qua. Có thể đặt biến môi trường `SMTP_PASS` và `PRODUCTION_DB_PASS` thay thế; biến môi trường được ưu tiên. Kết nối DB localhost vẫn dùng cấu hình hiện tại trong `config/database.php`.

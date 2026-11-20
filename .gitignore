@@ -10,7 +10,6 @@ Thumbs.db
 
 # PHP
 vendor/
-composer.lock
 
 # Uploads
 uploads/*
@@ -32,3 +31,6 @@ logs/
 # Database backups
 *.sql.backup
 *.sql.gz
+
+# Private local credentials
+/config/local.php
