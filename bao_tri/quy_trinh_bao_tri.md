@@ -29,11 +29,11 @@ flowchart LR
 
 ## Bước 0: Chuẩn bị (khoảng nửa buổi)
 
-- [ ] `git init`, commit toàn bộ bản hiện tại làm mốc: `git commit -m "Ban goc truoc bao tri"`.
-- [ ] Export database hiện tại thành `database/schema.sql` (cấu trúc) và `database/seed.sql` (dữ liệu mẫu, không có dữ liệu thật).
-- [ ] Sửa `BASE_URL` và `.htaccess` để chạy được trên localhost đúng thư mục hiện tại.
-- [ ] Chặn truy cập web vào `bao_tri/` (`.htaccess`: `Require all denied`), hoặc không upload thư mục này lên hosting.
-- [ ] Lập danh sách các luồng chính để tự kiểm tra sau mỗi bước (xem Phụ lục A).
+- [x] Git riêng trong thư mục dự án; bản mốc `3f1f827`; nhánh phát triển `develop/maintenance-baseline`.
+- [x] Xuất `database/schema.sql`, tạo `database/seed.sql` giả lập; import kiểm chứng thành công. Bản dump dữ liệu thật chỉ lưu riêng ngoài Git.
+- [x] Xác minh URL localhost đúng thư mục hiện tại (HTTP 200); sửa nhận diện localhost có cổng. `BASE_URL`/`RewriteBase` chưa cần thay đổi.
+- [x] Chặn web vào `bao_tri/`, `database/`, `storage/` bằng `.htaccess`; đã xác minh HTTP 403.
+- [x] Lập danh sách và chạy kiểm tra baseline: 28 mục, 24 đạt, 4 lỗi hiện hữu. Xem [kết quả bước 0](ket_qua_buoc_0.md) và `database/README.md` về phạm vi chưa kiểm tra.
 
 ## Bước 1: Vá bảo mật khẩn cấp (1–2 buổi, giữ nguyên cấu trúc)
 

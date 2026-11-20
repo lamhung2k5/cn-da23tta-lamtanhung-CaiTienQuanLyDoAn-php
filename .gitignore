@@ -34,3 +34,7 @@ logs/
 
 # Private local credentials
 /config/local.php
+
+# Private database snapshots and local verification artifacts
+/storage/backups/
+/storage/baseline/

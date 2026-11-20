@@ -35,7 +35,7 @@ if ($isInfinityFree) {
     // =============================================
     define('DB_HOST', '127.0.0.1'); // 127.0.0.1 ép TCP, tránh lỗi UNIX socket
     define('DB_PORT', '3306');
-    define('DB_NAME', 'qldt_database');
+    define('DB_NAME', getenv('LOCAL_DB_NAME') ?: 'qldt_database');
     define('DB_USER', 'root');      // user mặc định XAMPP
     define('DB_PASS', '');           // mật khẩu mặc định XAMPP (rỗng)
     define('DB_CHARSET', 'utf8mb4');

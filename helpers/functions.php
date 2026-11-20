@@ -106,7 +106,9 @@ function verifyPassword($password, $hash) {
  */
 function enforceHttps() {
     if (!defined('IS_HTTPS') || !IS_HTTPS) {
-        if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] !== 'localhost' && $_SERVER['HTTP_HOST'] !== '127.0.0.1') {
+        // HTTP_HOST may include a port on local development servers.
+        $requestHost = strtolower(parse_url('http://' . ($_SERVER['HTTP_HOST'] ?? ''), PHP_URL_HOST) ?: '');
+        if ($requestHost !== '' && !in_array($requestHost, ['localhost', '127.0.0.1', '[::1]'], true)) {
             $redirectUrl = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
             header('Location: ' . $redirectUrl, true, 301);
             exit();
