@@ -13,8 +13,8 @@ $pageTitle = 'Thông báo';
 $thongBaoModel = new ThongBaoModel();
 
 // Xử lý đánh dấu đã đọc
-if (isset($_GET['action']) && $_GET['action'] === 'mark_read' && isset($_GET['id'])) {
-    $thongBaoId = (int)$_GET['id'];
+if (isset($_POST['action']) && $_POST['action'] === 'mark_read' && isset($_POST['id'])) {
+    $thongBaoId = (int)$_POST['id'];
     $thongBao = $thongBaoModel->findById($thongBaoId);
     
     if ($thongBao && $thongBao['nguoi_nhan_id'] == $user['id']) {
@@ -29,7 +29,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'mark_read' && isset($_GET['id
 }
 
 // Xử lý đánh dấu đã đọc tất cả
-if (isset($_GET['action']) && $_GET['action'] === 'mark_all_read') {
+if (isset($_POST['action']) && $_POST['action'] === 'mark_all_read') {
     $db = Database::getInstance()->getConnection();
     $stmt = $db->prepare("UPDATE thong_bao SET da_doc = 1 
             WHERE nguoi_nhan_id = :nguoi_nhan_id AND da_doc = 0");
@@ -247,7 +247,7 @@ include_once __DIR__ . '/includes/header.php';
                         <a href="?filter=unread" class="btn btn-<?= $filter === 'unread' ? 'danger' : 'outline-danger' ?>">
                             <i class="bi bi-envelope-fill"></i> Chưa đọc 
                             <span class="badge bg-<?= $filter === 'unread' ? 'white text-danger' : 'danger' ?> ms-1">
-                                <?= $soThongBaoChuaDoc ?>
+                                <?= e($soThongBaoChuaDoc) ?>
                             </span>
                         </a>
                     </div>
@@ -274,7 +274,7 @@ include_once __DIR__ . '/includes/header.php';
                             <div class="card shadow-sm border-0 h-100 <?= $tb['da_doc'] == 0 ? 'border-start border-danger border-4' : '' ?>" 
                                  style="transition: all 0.3s ease;">
                                 <div class="card-body">
-                                    <a href="?action=mark_read&id=<?= $tb['id'] ?>" 
+                                    <a href="?action=mark_read&id=<?= e($tb['id']) ?>"
                                        class="text-decoration-none text-dark">
                                         <div class="d-flex align-items-start">
                                             <!-- Icon -->

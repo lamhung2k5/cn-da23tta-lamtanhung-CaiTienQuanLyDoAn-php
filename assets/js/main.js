@@ -59,7 +59,7 @@
                 <div class="d-flex">
                     <div class="toast-body">
                         <i class="bi ${icon} me-2"></i>
-                        ${message}
+                        ${escapeText(message)}
                     </div>
                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
                 </div>
@@ -341,12 +341,12 @@
                 
                 container.insertAdjacentHTML('beforeend', `
                     <li>
-                        <a class="dropdown-item ${notif.da_doc ? '' : 'fw-bold'}" href="${notif.link || '#'}" 
+                        <a class="dropdown-item ${notif.da_doc ? '' : 'fw-bold'}" href="${escapeText(safeLink(notif.link))}"
                            data-notification-id="${notif.id}">
                             <i class="bi ${iconClass} me-2"></i>
                             <div class="small">
-                                <div>${notif.tieu_de}</div>
-                                <div class="text-muted">${notif.noi_dung}</div>
+                                <div>${escapeText(notif.tieu_de)}</div>
+                                <div class="text-muted">${escapeText(notif.noi_dung)}</div>
                             </div>
                         </a>
                     </li>

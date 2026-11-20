@@ -291,7 +291,7 @@ include_once __DIR__ . '/../includes/header.php';
             <?php if ($xemChiTiet && $deTaiXem): ?>
                 <!-- Chi tiết đề tài và danh sách sinh viên -->
                 <!-- Thông tin đề tài -->
-                <div class="card mb-4" id="chi-tiet-de-tai-<?= $xemChiTiet ?>">
+                <div class="card mb-4" id="chi-tiet-de-tai-<?= e($xemChiTiet) ?>">
                     <div class="card-header bg-secondary text-white text-start">
                         <h5 class="mb-0">Chi tiết đề tài và sinh viên đăng ký</h5>
                     </div>
@@ -310,7 +310,7 @@ include_once __DIR__ . '/../includes/header.php';
                             <div class="col-12">
                                 <h5><strong>Số lượng:</strong> 
                                 <strong class="<?= ($deTaiXem['so_luong_da_dang_ky'] >= $deTaiXem['so_luong_sv']) ? 'text-danger' : '' ?>">
-                                    <?= $deTaiXem['so_luong_da_dang_ky'] ?>/<?= $deTaiXem['so_luong_sv'] ?>
+                                    <?= e($deTaiXem['so_luong_da_dang_ky']) ?>/<?= e($deTaiXem['so_luong_sv']) ?>
                                 </strong></h5>
                             </div>
                         </div>
@@ -321,7 +321,7 @@ include_once __DIR__ . '/../includes/header.php';
                         </div>
                         <div class="row">
                             <div class="col-12">
-                                <h5><strong>Sinh viên chờ duyệt:</strong> <span class=" text-black fs-4"><?= $soSinhVienThucTe ?></span></h5>
+                                <h5><strong>Sinh viên chờ duyệt:</strong> <span class=" text-black fs-4"><?= e($soSinhVienThucTe) ?></span></h5>
                             </div>
                         </div>
                     </div>
@@ -337,7 +337,7 @@ include_once __DIR__ . '/../includes/header.php';
                     <div class="card-body">
                         <!-- Thanh tìm kiếm -->
                         <form method="GET" action="" id="searchForm" class="mb-3">
-                            <input type="hidden" name="xem" value="<?= $xemChiTiet ?>">
+                            <input type="hidden" name="xem" value="<?= e($xemChiTiet) ?>">
                             <div class="row g-2">
                                 <div class="col-md-3">
                                     <input type="text" class="form-control form-control-sm" name="search_mssv" 
@@ -356,7 +356,7 @@ include_once __DIR__ . '/../includes/header.php';
                                         <button type="submit" class="btn btn-primary btn-sm">
                                             <i class="bi bi-search"></i> Tìm kiếm
                                         </button>
-                                        <a href="duyet_sinh_vien.php?xem=<?= $xemChiTiet ?>" class="btn btn-danger btn-sm">
+                                        <a href="duyet_sinh_vien.php?xem=<?= e($xemChiTiet) ?>" class="btn btn-danger btn-sm">
                                             <i class="bi bi-arrow-clockwise"></i> Làm mới
                                         </a>
                                     </div>
@@ -369,7 +369,7 @@ include_once __DIR__ . '/../includes/header.php';
                             <div class="alert alert-info mb-3">
                                 Tìm thấy <strong><?= count($sinhVienCuaDeTai) ?></strong> kết quả từ <strong><?= count($deTaiChoDuyet[$xemChiTiet]['sinh_vien']) ?></strong> sinh viên
                                 <?php if (count($sinhVienCuaDeTai) === 0): ?>
-                                    <br><small>Thử điều chỉnh điều kiện tìm kiếm hoặc <a href="duyet_sinh_vien.php?xem=<?= $xemChiTiet ?>">xóa bộ lọc</a></small>
+                                    <br><small>Thử điều chỉnh điều kiện tìm kiếm hoặc <a href="duyet_sinh_vien.php?xem=<?= e($xemChiTiet) ?>">xóa bộ lọc</a></small>
                                 <?php endif; ?>
                             </div>
                         <?php endif; ?>
@@ -402,7 +402,7 @@ include_once __DIR__ . '/../includes/header.php';
                                             <tr class="<?= $daDuSoLuong ? 'table-warning' : '' ?>">
                                                 <td class="text-center"><?= $index++ ?></td>
                                                 <td><strong><?= htmlspecialchars($dk['ten_sinh_vien']) ?></strong></td>
-                                                <td><?= $dk['ma_sinh_vien'] ?></td>
+                                                <td><?= e($dk['ma_sinh_vien']) ?></td>
                                                 <td><?= htmlspecialchars($dk['lop']) ?></td>
                                                 <td><?= getHeDaoTaoLabel($dk['he_dao_tao']) ?></td>
                                                 <td><?= formatDate($dk['ngay_dang_ky']) ?></td>
@@ -429,7 +429,7 @@ include_once __DIR__ . '/../includes/header.php';
                                                     <?php if ($sinhVienDaDu): ?>
                                                         <!-- Sinh viên đã có đề tài được duyệt cùng loại -->
                                                         <button type="button" class="btn btn-sm btn-danger" 
-                                                                onclick="xoaDangKy(<?= $dk['id'] ?>)"
+                                                                onclick="xoaDangKy(<?= e($dk['id']) ?>)"
                                                                 title="Xóa đăng ký này">
                                                             <i class="bi bi-trash-fill"></i> Xóa
                                                         </button>
@@ -437,13 +437,13 @@ include_once __DIR__ . '/../includes/header.php';
                                                         <!-- Sinh viên chưa có đề tài được duyệt cùng loại -->
                                                         <?php if (!$daDuSoLuong): ?>
                                                             <button type="button" class="btn btn-sm btn-success" 
-                                                                    onclick="duyetSinhVien(<?= $dk['id'] ?>)">
+                                                                    onclick="duyetSinhVien(<?= e($dk['id']) ?>)">
                                                                 <i class="bi bi-check-circle"></i> Duyệt
                                                             </button>
                                                         <?php endif; ?>
                                                         
                                                         <button type="button" class="btn btn-sm btn-danger" 
-                                                                onclick="tuChoiSinhVien(<?= $dk['id'] ?>)">
+                                                                onclick="tuChoiSinhVien(<?= e($dk['id']) ?>)">
                                                             <i class="bi bi-x-circle"></i> Từ chối
                                                         </button>
                                                         
@@ -465,7 +465,7 @@ include_once __DIR__ . '/../includes/header.php';
                 
                 <!-- Nút Quay lại -->
                 <div class="mt-3 d-flex justify-content-start">
-                    <a href="duyet_sinh_vien.php?loai=<?= $loaiDeTai ?>" class="btn btn-sm text-white" style="background-color: #0d6efd;">
+                    <a href="duyet_sinh_vien.php?loai=<?= e($loaiDeTai) ?>" class="btn btn-sm text-white" style="background-color: #0d6efd;">
                         <i class="bi bi-chevron-double-left"></i> Quay lại
                     </a>
                 </div>
@@ -480,14 +480,14 @@ include_once __DIR__ . '/../includes/header.php';
                                 <a class="nav-link <?= $loaiDeTai === 'co_so_nganh' ? 'active' : '' ?>" 
                                    href="?loai=co_so_nganh">
                                     <i class="bi bi-journal-code"></i> Cơ sở ngành
-                                    <span class="badge bg-<?= $loaiDeTai === 'co_so_nganh' ? 'primary' : 'secondary' ?> ms-1"><?= $tongCSN ?></span>
+                                    <span class="badge bg-<?= $loaiDeTai === 'co_so_nganh' ? 'primary' : 'secondary' ?> ms-1"><?= e($tongCSN) ?></span>
                                 </a>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <a class="nav-link <?= $loaiDeTai === 'chuyen_nganh' ? 'active' : '' ?>" 
                                    href="?loai=chuyen_nganh">
                                     <i class="bi bi-mortarboard"></i> Chuyên ngành
-                                    <span class="badge bg-<?= $loaiDeTai === 'chuyen_nganh' ? 'success' : 'secondary' ?> ms-1"><?= $tongCN ?></span>
+                                    <span class="badge bg-<?= $loaiDeTai === 'chuyen_nganh' ? 'success' : 'secondary' ?> ms-1"><?= e($tongCN) ?></span>
                                 </a>
                             </li>
                         </ul>
@@ -542,10 +542,10 @@ include_once __DIR__ . '/../includes/header.php';
                                                 </td>
                                                 <td><?= getHeDaoTaoLabel($deTai['he_dao_tao']) ?></td>
                                                 <td class="text-center">
-                                                    <span class="text-black fs-6"><?= $soSinhVienThucTe ?></span>
+                                                    <span class="text-black fs-6"><?= e($soSinhVienThucTe) ?></span>
                                                 </td>
                                                 <td class="text-center">
-                                                    <a href="?xem=<?= $deTaiId ?>&loai=<?= $loaiDeTai ?>" class="btn btn-sm btn-info">
+                                                    <a href="?xem=<?= e($deTaiId) ?>&loai=<?= e($loaiDeTai) ?>" class="btn btn-sm btn-info">
                                                         <i class="bi bi-eye"></i>
                                                     </a>
                                                 </td>
@@ -569,7 +569,7 @@ include_once __DIR__ . '/../includes/header.php';
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title fs-4">Từ chối sinh viên</h5>
             </div>
-            <form id="tuChoiForm" method="POST" action="xu_ly_duyet.php">
+            <form id="tuChoiForm" method="POST" action="xu_ly_duyet.php"><?= csrf_field() ?>
                 <div class="modal-body p-4">
                     <input type="hidden" name="action" value="tu_choi">
                     <input type="hidden" name="dang_ky_id" id="tuChoiDangKyId">
@@ -596,7 +596,7 @@ function duyetSinhVien(dangKyId) {
         const urlParams = new URLSearchParams(window.location.search);
         const loai = urlParams.get('loai') || 'co_so_nganh';
         const xem = urlParams.get('xem');
-        window.location.href = 'xu_ly_duyet.php?action=duyet&id=' + dangKyId + '&loai=' + loai + (xem ? '&xem=' + xem : '');
+        secureNavigate('xu_ly_duyet.php?action=duyet&id=' + dangKyId + '&loai=' + loai + (xem ? '&xem=' + xem : ''));
     }
 }
 
@@ -619,7 +619,7 @@ function xoaDangKy(dangKyId) {
         const urlParams = new URLSearchParams(window.location.search);
         const loai = urlParams.get('loai') || 'co_so_nganh';
         const xem = urlParams.get('xem');
-        window.location.href = 'xoa_dang_ky_gv.php?id=' + dangKyId + '&loai=' + loai + (xem ? '&xem=' + xem : '');
+        secureNavigate('xoa_dang_ky_gv.php?id=' + dangKyId + '&loai=' + loai + (xem ? '&xem=' + xem : ''));
     }
 }
 

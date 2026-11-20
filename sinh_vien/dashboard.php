@@ -107,7 +107,7 @@ include_once __DIR__ . '/../includes/header.php';
                                 </tr>
                                 <tr>
                                     <td><strong>MSSV</strong></td>
-                                    <td><?= $sinhVien['ma_sinh_vien'] ?></td>
+                                    <td><?= e($sinhVien['ma_sinh_vien']) ?></td>
                                 </tr>
                                 <tr>
                                     <td><strong>Lớp</strong></td>
@@ -123,7 +123,7 @@ include_once __DIR__ . '/../includes/header.php';
                                 </tr>
                                 <tr>
                                     <td><strong>Email</strong></td>
-                                    <td><?= $user['email'] ?></td>
+                                    <td><?= e($user['email']) ?></td>
                                 </tr>
                             </table>
                         </div>
@@ -186,13 +186,13 @@ include_once __DIR__ . '/../includes/header.php';
                                             <td><?= getStatusBadge($dt['trang_thai']) ?></td>
                                             <td>
                                                 <div class="d-flex gap-1">
-                                                    <a href="chi_tiet_de_tai.php?id=<?= $dt['de_tai_id'] ?>"
+                                                    <a href="chi_tiet_de_tai.php?id=<?= e($dt['de_tai_id']) ?>"
                                                         class="btn btn-ocean btn-sm" title="Xem chi tiết">
                                                         <i class="bi bi-eye-fill"></i>
                                                     </a>
                                                     <?php if ($dt['trang_thai'] === 'tu_choi'): ?>
                                                         <button type="button" class="btn btn-danger btn-sm"
-                                                            onclick="xoaDangKy(<?= $dt['id'] ?>)" title="Xóa đăng ký">
+                                                            onclick="xoaDangKy(<?= e($dt['id']) ?>)" title="Xóa đăng ký">
                                                             <i class="bi bi-trash-fill"></i>
                                                         </button>
                                                     <?php endif; ?>

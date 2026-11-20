@@ -4,6 +4,7 @@
  */
 
 require_once '../bootstrap.php';
+requirePost();
 requireRole(ROLE_LANH_DAO);
 
 header('Content-Type: application/json; charset=utf-8');
@@ -64,5 +65,5 @@ try {
     jsonSuccess('Phân công giảng viên chấm thành công');
     
 } catch (Exception $e) {
-    jsonError('Lỗi: ' . $e->getMessage());
+    jsonError('Lỗi: ' . safeError($e));
 }

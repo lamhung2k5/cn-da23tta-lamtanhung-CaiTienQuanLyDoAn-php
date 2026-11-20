@@ -420,7 +420,7 @@ body {
                         </div>
                     <?php endif; ?>
                         
-                    <form method="POST" action="">
+                    <form method="POST" action=""><?= csrf_field() ?>
                         <div style="max-width: 600px; margin: auto;">
                             
                             <div class="mb-4">
@@ -461,7 +461,7 @@ body {
                                 <button type="submit" class="btn-agree">
                                     Đồng ý
                                 </button>
-                                <a href="profile.php?mode=<?= $currentRole ?>" class="btn-cancel">
+                                <a href="profile.php?mode=<?= e($currentRole) ?>" class="btn-cancel">
                                     Hủy bỏ
                                 </a>
                             </div>

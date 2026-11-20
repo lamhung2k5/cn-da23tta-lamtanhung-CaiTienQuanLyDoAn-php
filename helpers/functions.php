@@ -90,16 +90,7 @@ function hashPassword($password) {
 /**
  * Kiểm tra mật khẩu bằng password_verify()
  */
-function verifyPassword($password, $hash) {
-    if (password_verify($password, $hash)) {
-        return true;
-    }
-    // Backward compatibility cho dữ liệu cũ (MD5 hoặc Plaintext)
-    if ($hash === md5($password) || $hash === $password) {
-        return true;
-    }
-    return false;
-}
+function verifyPassword($password, $hash) { return is_string($password) && is_string($hash) && password_verify($password, $hash); }
 
 /**
  * Tự động chuyển hướng sang HTTPS nếu cần
@@ -120,7 +111,7 @@ function enforceHttps() {
  * Generate OTP code
  */
 function generateOTP($length = 6) {
-    return str_pad(rand(0, pow(10, $length) - 1), $length, '0', STR_PAD_LEFT);
+    return str_pad(random_int(0, (10 ** $length) - 1), $length, '0', STR_PAD_LEFT);
 }
 
 /**
@@ -185,7 +176,7 @@ function jsonError($message, $statusCode = 400) {
  * Validate CSRF token
  */
 function validateCSRF($token) {
-    return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
+    return is_string($token) && isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
 }
 
 /**
@@ -208,7 +199,7 @@ function getStatusBadge($status) {
         'da_duyet' => '<span class="badge bg-success">Đã duyệt</span>',
         'tu_choi' => '<span class="badge bg-danger">Từ chối</span>',
     ];
-    return $badges[$status] ?? '<span class="badge bg-secondary">' . $status . '</span>';
+    return $badges[$status] ?? '<span class="badge bg-secondary">' . e($status) . '</span>';
 }
 
 /**
@@ -242,7 +233,7 @@ function generateCaptcha($length = 6) {
     $characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     $captcha = '';
     for ($i = 0; $i < $length; $i++) {
-        $captcha .= $characters[rand(0, strlen($characters) - 1)];
+        $captcha .= $characters[random_int(0, strlen($characters) - 1)];
     }
     return $captcha;
 }
@@ -304,6 +295,7 @@ function createSecureSession($userData) {
     $_SESSION['vai_tro_id'] = $userData['vai_tro_id'];
     $_SESSION['profile_id'] = $userData['profile_id'] ?? null;
     $_SESSION['login_time'] = time();
+    $_SESSION['auth_fingerprint'] = $userData['auth_fingerprint'];
     
     // Tạo CSRF token mới
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -343,7 +335,7 @@ function getMenuLinks() {
     if (file_exists($configFile)) {
         $links = json_decode(file_get_contents($configFile), true);
         if ($links) {
-            return array_merge($defaultLinks, $links);
+            return array_map('safeHref', array_merge($defaultLinks, $links));
         }
     }
     

@@ -3,6 +3,7 @@
 # Enable Rewrite Engine
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteRule ^(?:\.git|\.vscode|config|models|helpers|vendor|bao_tri|bao_cao|database|storage)(?:/|$) - [F,L,NC]
 
     # ============================================================
     # RewriteBase:

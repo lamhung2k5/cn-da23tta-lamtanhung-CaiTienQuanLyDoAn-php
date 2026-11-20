@@ -146,7 +146,7 @@ include_once __DIR__ . '/../includes/header.php';
                                     ?>
                                         <tr>
                                             <td class="text-center"><?= $index++ ?></td>
-                                            <td><?= $sv['ma_sinh_vien'] ?></td>
+                                            <td><?= e($sv['ma_sinh_vien']) ?></td>
                                             <td><strong><?= htmlspecialchars($sv['ten_sinh_vien']) ?></strong></td>
                                             <td><?= htmlspecialchars($sv['lop']) ?></td>
                                             <td><?= htmlspecialchars($sv['tieu_de']) ?></td>

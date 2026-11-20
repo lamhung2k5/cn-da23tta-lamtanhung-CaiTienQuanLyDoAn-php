@@ -434,10 +434,10 @@ body {
                     
                     <!-- Action Buttons -->
                     <div class="mt-4 d-flex justify-content-end gap-3">
-                        <a href="change_password.php?mode=<?= $currentRole ?>" class="btn" style="background-color: #dc3545; color: white; border: none; text-decoration: none;">
+                        <a href="change_password.php?mode=<?= e($currentRole) ?>" class="btn" style="background-color: #dc3545; color: white; border: none; text-decoration: none;">
                             <i class="bi bi-shield-lock"></i> Đổi mật khẩu
                         </a>
-                        <a href="edit-profile.php?mode=<?= $currentRole ?>" class="btn" style="background-color: #207dffff; color: white; border: none; text-decoration: none;">
+                        <a href="edit-profile.php?mode=<?= e($currentRole) ?>" class="btn" style="background-color: #207dffff; color: white; border: none; text-decoration: none;">
                             <i class="bi bi-pencil-square"></i> Chỉnh sửa hồ sơ
                         </a>
                     </div>

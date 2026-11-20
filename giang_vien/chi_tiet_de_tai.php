@@ -27,9 +27,9 @@ if (!$deTaiId) {
     redirect('giang_vien/danh_sach_de_tai.php');
 }
 
-$deTai = $deTaiModel->findById($deTaiId);
+$deTai = requireTopicOwner($deTaiId);
 
-if (!$deTai || $deTai['giang_vien_id'] != $giangVien['id']) {
+if (!$deTai || (!hasRole(ROLE_LANH_DAO) && $deTai['giang_vien_id'] != ($giangVien['id'] ?? 0))) {
     setFlashMessage('error', 'Bạn không có quyền xem đề tài này');
     redirect('giang_vien/danh_sach_de_tai.php');
 }
@@ -103,11 +103,11 @@ include_once __DIR__ . '/../includes/header.php';
                             <p class="mb-0 text-muted">Xem thông tin chi tiết và quản lý sinh viên đăng ký đề tài.</p>
                         </div>
                         <div class="col-md-4 text-end">
-                            <a href="danh_sach_de_tai.php?loai=<?= $deTai['he_dao_tao'] ?>" class="btn text-white" style="background-color: #0d6efd;">
+                            <a href="danh_sach_de_tai.php?loai=<?= e($deTai['he_dao_tao']) ?>" class="btn text-white" style="background-color: #0d6efd;">
                                 <i class="bi bi-chevron-double-left"></i> Quay lại
                             </a>
                             <?php if ($deTai['trang_thai'] === 'nhap' || $deTai['trang_thai'] === 'tu_choi'): ?>
-                                <a href="sua_de_tai.php?id=<?= $deTai['id'] ?>" class="btn btn-warning">
+                                <a href="sua_de_tai.php?id=<?= e($deTai['id']) ?>" class="btn btn-warning">
                                     <i class="bi bi-pencil"></i> Sửa
                                 </a>
                             <?php endif; ?>
@@ -144,8 +144,8 @@ include_once __DIR__ . '/../includes/header.php';
                             $daDuSoLuong = ($deTai['so_luong_da_dang_ky'] >= $deTai['so_luong_sv']);
                             $badgeClass = $daDuSoLuong ? 'bg-danger' : 'bg-info';
                             ?>
-                            <span class="badge <?= $badgeClass ?>">
-                                <?= $deTai['so_luong_da_dang_ky'] ?>/<?= $deTai['so_luong_sv'] ?>
+                            <span class="badge <?= e($badgeClass) ?>">
+                                <?= e($deTai['so_luong_da_dang_ky']) ?>/<?= e($deTai['so_luong_sv']) ?>
                             </span>
                         </div>
                     </div>
@@ -227,7 +227,7 @@ include_once __DIR__ . '/../includes/header.php';
                                         <tr>
                                             <td class="text-center"><?= $index + 1 ?></td>
                                             <td><?= htmlspecialchars($sv['ten_sinh_vien']) ?></td>
-                                            <td><?= $sv['ma_sinh_vien'] ?></td>
+                                            <td><?= e($sv['ma_sinh_vien']) ?></td>
                                             <td><?= htmlspecialchars($sv['lop']) ?></td>
                                             <td><?= formatDate($sv['ngay_dang_ky']) ?></td>
                                             <td class="text-start">
@@ -242,13 +242,13 @@ include_once __DIR__ . '/../includes/header.php';
                                             <td class="text-center">
                                                 <?php if ($sv['trang_thai'] === 'tu_choi'): ?>
                                                     <button class="btn btn-danger btn-sm py-0" 
-                                                            onclick="xoaSinhVien(<?= $sv['id'] ?>, '<?= htmlspecialchars($sv['ten_sinh_vien']) ?>')"
+                                                            onclick="xoaSinhVien(<?= e($sv['id']) ?>, <?= e(js($sv['ten_sinh_vien'])) ?>)"
                                                             title="Xóa sinh viên">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
                                                 <?php elseif ($sinhVienDaDu && $sv['trang_thai'] === STATUS_CHO_DUYET): ?>
                                                     <button type="button" class="btn btn-sm btn-danger" 
-                                                            onclick="xoaDangKy(<?= $sv['id'] ?>)"
+                                                            onclick="xoaDangKy(<?= e($sv['id']) ?>)"
                                                             title="Xóa đăng ký này">
                                                         <i class="bi bi-trash-fill"></i> Xóa
                                                     </button>
@@ -271,13 +271,13 @@ include_once __DIR__ . '/../includes/header.php';
 <script>
 function xoaSinhVien(dangKyId, tenSinhVien) {
     if (confirm('Bạn có chắc muốn xóa đăng ký của sinh viên "' + tenSinhVien + '"?\n\nHành động này không thể hoàn tác.')) {
-        window.location.href = 'xu_ly_xoa_dang_ky.php?id=' + dangKyId + '&de_tai_id=<?= $deTaiId ?>';
+        secureNavigate('xu_ly_xoa_dang_ky.php?id=' + dangKyId + '&de_tai_id=<?= e($deTaiId) ?>');
     }
 }
 
 function xoaDangKy(dangKyId) {
     if (confirm('Bạn có chắc chắn muốn xóa đăng ký này?\n\nSinh viên này đã có đề tài được duyệt cùng loại, xóa đăng ký sẽ giúp giảm số lượng sinh viên chờ duyệt.')) {
-        window.location.href = 'xoa_dang_ky_gv.php?id=' + dangKyId + '&redirect=chi_tiet&de_tai_id=<?= $deTaiId ?>';
+        secureNavigate('xoa_dang_ky_gv.php?id=' + dangKyId + '&redirect=chi_tiet&de_tai_id=<?= e($deTaiId) ?>');
     }
 }
 </script>

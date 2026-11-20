@@ -254,7 +254,7 @@ include_once __DIR__ . '/../includes/header.php';
                     <div class="row">
                         <div class="col-md-8">
                             <form method="GET" action="" id="filterForm">
-                                <input type="hidden" name="loai" value="<?= $loaiDeTai ?>">
+                                <input type="hidden" name="loai" value="<?= e($loaiDeTai) ?>">
                                 <div class="input-group">
                                     <span class="input-group-text bg-white">
                                         <i class="bi bi-search"></i>
@@ -263,7 +263,7 @@ include_once __DIR__ . '/../includes/header.php';
                                            placeholder="Nhập tên đề tài hoặc tên giảng viên..."
                                            value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
                                     <?php if (!empty($search)): ?>
-                                        <a href="?loai=<?= $loaiDeTai ?>" class="btn btn-danger" title="Xóa tìm kiếm">
+                                        <a href="?loai=<?= e($loaiDeTai) ?>" class="btn btn-danger" title="Xóa tìm kiếm">
                                             <i class="bi bi-x-lg"></i>
                                         </a>
                                     <?php endif; ?>
@@ -373,7 +373,7 @@ include_once __DIR__ . '/../includes/header.php';
                                         <i class="bi bi-people-fill text-info me-1" style="font-size: 1.1rem;"></i>
                                         <span class="text-muted me-0" style="font-size: 0.85rem;">Số lượng:</span>
                                         <span class="badge bg-white text-dark px-1 py-0" style="font-size: 0.85rem;">
-                                            Còn <?= $dt['con_lai'] ?>/<?= $dt['so_luong_sv'] ?> chỗ
+                                            Còn <?= e($dt['con_lai']) ?>/<?= e($dt['so_luong_sv']) ?> chỗ
                                         </span>
                                     </div>
                                     
@@ -396,7 +396,7 @@ include_once __DIR__ . '/../includes/header.php';
                                         <?php else: ?>
                                             <!-- Đề tài còn chỗ - hiển thị nút bình thường -->
                                             <div class="d-flex justify-content-center gap-2">
-                                                <a href="chi_tiet_de_tai.php?id=<?= $dt['id'] ?>" 
+                                                <a href="chi_tiet_de_tai.php?id=<?= e($dt['id']) ?>"
                                                    class="btn btn-ocean btn-sm">
                                                     <i class="bi bi-eye-fill me-2"></i>Xem chi tiết
                                                 </a>
@@ -434,11 +434,11 @@ include_once __DIR__ . '/../includes/header.php';
                                                 }
                                                 
                                                 if (($khongTheDangKy) || ($currentTime < $openTime) || ($currentTime > $closeTime)): ?>
-                                                    <button class="btn btn-danger btn-sm" title="<?= $lyDo ?>">
+                                                    <button class="btn btn-danger btn-sm" title="<?= e($lyDo) ?>">
                                                         <i class="bi bi-lock-fill me-1"></i>Đăng ký ngay
                                                     </button>
                                                 <?php else: ?>
-                                                    <a href="dang_ky_de_tai.php?id=<?= $dt['id'] ?>" 
+                                                    <a href="dang_ky_de_tai.php?id=<?= e($dt['id']) ?>"
                                                        class="btn btn-danger btn-sm"
                                                        onclick="return confirm('Bạn có chắc muốn đăng ký đề tài này?')">
                                                         <i class="bi bi-bookmark-plus-fill me-1"></i>Đăng ký ngay

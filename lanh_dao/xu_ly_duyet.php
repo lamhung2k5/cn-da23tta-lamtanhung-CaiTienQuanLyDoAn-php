@@ -4,6 +4,7 @@
  */
 
 require_once '../bootstrap.php';
+requirePost();
 requireRole(ROLE_LANH_DAO);
 
 $user = getCurrentUser();
@@ -11,8 +12,8 @@ $deTaiModel = new DeTaiModel();
 $thongBaoModel = new ThongBaoModel();
 
 // Xử lý duyệt hàng loạt
-if (isset($_GET['action']) && $_GET['action'] === 'duyet_hang_loat' && isset($_GET['ids'])) {
-    $ids = explode(',', $_GET['ids']);
+if (isset($_POST['action']) && $_POST['action'] === 'duyet_hang_loat' && isset($_POST['ids'])) {
+    $ids = explode(',', $_POST['ids']);
     $successCount = 0;
     $errorCount = 0;
     
@@ -40,12 +41,12 @@ if (isset($_GET['action']) && $_GET['action'] === 'duyet_hang_loat' && isset($_G
         setFlashMessage('warning', "Có {$errorCount} đề tài không thể duyệt");
     }
     
-    redirect('lanh_dao/duyet_de_tai.php?loai=' . ($_GET['loai'] ?? 'co_so_nganh'));
+    redirect('lanh_dao/duyet_de_tai.php?loai=' . ($_POST['loai'] ?? 'co_so_nganh'));
 }
 
 // Xử lý duyệt
-if (isset($_GET['action']) && $_GET['action'] === 'duyet' && isset($_GET['id'])) {
-    $deTaiId = (int)$_GET['id'];
+if (isset($_POST['action']) && $_POST['action'] === 'duyet' && isset($_POST['id'])) {
+    $deTaiId = (int)$_POST['id'];
     
     // Lấy thông tin đề tài trước khi duyệt
     $sql = "SELECT dt.*, gv.ma_giang_vien, nd.ho_ten as ten_giang_vien
@@ -70,9 +71,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'duyet' && isset($_GET['id']))
     }
     
     // Kiểm tra redirect
-    $redirectPage = isset($_GET['redirect']) && $_GET['redirect'] === 'dashboard' 
-        ? 'lanh_dao/dashboard.php?gv_id=' . ($_GET['gv_id'] ?? '') . '&loai=' . ($_GET['loai'] ?? 'co_so_nganh')
-        : 'lanh_dao/duyet_de_tai.php?loai=' . ($_GET['loai'] ?? 'co_so_nganh');
+    $redirectPage = isset($_POST['redirect']) && $_POST['redirect'] === 'dashboard'
+        ? 'lanh_dao/dashboard.php?gv_id=' . ($_POST['gv_id'] ?? '') . '&loai=' . ($_POST['loai'] ?? 'co_so_nganh')
+        : 'lanh_dao/duyet_de_tai.php?loai=' . ($_POST['loai'] ?? 'co_so_nganh');
     redirect($redirectPage);
 }
 
@@ -155,4 +156,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'tu_choi') {
 }
 
 // Nếu không có action hợp lệ
-redirect('lanh_dao/duyet_de_tai.php?loai=' . ($_GET['loai'] ?? $_POST['loai'] ?? 'co_so_nganh'));
+redirect('lanh_dao/duyet_de_tai.php?loai=' . ($_POST['loai'] ?? $_POST['loai'] ?? 'co_so_nganh'));

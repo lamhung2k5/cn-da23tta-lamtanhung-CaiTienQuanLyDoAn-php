@@ -35,23 +35,25 @@ flowchart LR
 - [x] Chặn web vào `bao_tri/`, `database/`, `storage/` bằng `.htaccess`; đã xác minh HTTP 403.
 - [x] Lập danh sách và chạy kiểm tra baseline: 28 mục, 24 đạt, 4 lỗi hiện hữu. Xem [kết quả bước 0](ket_qua_buoc_0.md) và `database/README.md` về phạm vi chưa kiểm tra.
 
-## Bước 1: Vá bảo mật khẩn cấp (1–2 buổi, giữ nguyên cấu trúc)
+## Bước 1: Vá bảo mật khẩn cấp
+
+> Phạm vi cập nhật ngày 21/11/2026: chỉ đăng nhập tài khoản trường cấp; Lãnh đạo quản lý tài khoản. Đóng các chức năng đăng ký/OAuth/OTP/reset công khai không dùng. Xem [báo cáo và bàn giao](../bao_cao/tien_do/05_ban_giao_bao_mat.md); các mô tả lỗi bên dưới là đầu vào ban đầu, không phải danh sách chức năng phải giữ.
 
 | Mã | Việc cần làm |
 |---|---|
-| S1 | `register.php`: chỉ cho tự đăng ký vai trò **Sinh viên** (hoặc tắt hẳn đăng ký tự do). Tài khoản Giảng viên/Lãnh đạo chỉ do Lãnh đạo tạo. |
+| S1 | Đóng đăng ký tự do và OTP đăng ký. Mọi tài khoản do Lãnh đạo cấp/import theo quy tắc nhà trường. |
 | S2 | `import_sinh_vien.php`, `import_giang_vien.php`: thêm `requireRole(ROLE_LANH_DAO)` và chuyển vào khu vực `lanh_dao/`. |
 | S3 | `sua_ngay_thong_bao.php`: thêm `requireRole(ROLE_LANH_DAO)`. |
 | S4 | Xóa `info.php`. Chuyển mọi mật khẩu sang `.env` (có `.env.example`). **Đổi mật khẩu DB InfinityFree và App Password Gmail.** |
-| S5 | Không hiển thị OTP ra màn hình khi gửi mail lỗi (trừ khi đang chạy localhost). |
-| S6 | Trang đặt lại mật khẩu phải kiểm tra `reset_token_expiry`; gộp 3 trang reset thành 1. |
+| S5 | Đóng endpoint OTP đăng ký; không bổ sung bảng OTP cho chức năng đã ngừng dùng. |
+| S6 | Đóng reset công khai không dùng; Lãnh đạo cấp lại mật khẩu bằng POST + CSRF + xác nhận mật khẩu hiện tại. |
 | S7 | Thêm `csrf_field()` vào mọi form POST; kiểm tra token ở mọi file `xu_ly_*`, `xoa_*`. |
 | S8 | Chuyển mọi thao tác xóa/duyệt/đăng ký từ GET sang POST + CSRF. |
 | H2 | Bỏ chấp nhận MD5/plaintext; tài khoản cũ phải đặt lại mật khẩu. |
 | H3 | OTP và captcha sinh bằng `random_int()`; giới hạn số lần nhập OTP. |
 | H1 | Giới hạn số lần đăng nhập sai (ví dụ khóa 15 phút sau 5 lần sai). |
 | H5 | Không in `$e->getMessage()` ra người dùng; ghi log thay vào đó. |
-| H7 | Tách state OAuth riêng cho từng nhà cung cấp. |
+| H7 | Đóng tất cả endpoint OAuth và callback; không duy trì nhiều phương thức đăng nhập. |
 | – | `.htaccess`: chặn truy cập trực tiếp vào `config/`, `models/`, `helpers/`, `vendor/`, `bao_tri/`. |
 
 **Xong bước này khi:** người lạ không tạo được tài khoản admin, mọi thao tác thay đổi dữ liệu đều cần POST + CSRF, và trong code không còn mật khẩu.

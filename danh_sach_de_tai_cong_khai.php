@@ -100,9 +100,11 @@ function buildFilterUrl($newParams = [])
 <html lang="vi">
 
 <head>
+<meta name="csrf-token" content="<?= e(generateCSRF()) ?>">
+<script src="<?= e(BASE_URL) ?>assets/js/security.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $pageTitle ?></title>
+    <title><?= e($pageTitle) ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -527,7 +529,7 @@ function buildFilterUrl($newParams = [])
                                         class="bi bi-journal-text me-2"></i>Danh sách đề tài</a></li>
                             <?php $menuLinks = getMenuLinks(); ?>
                             <?php if (!empty($menuLinks['ket_qua_thi'])): ?>
-                                <li><a class="dropdown-item" href="<?= $menuLinks['ket_qua_thi'] ?>" target="_blank"><i
+                                <li><a class="dropdown-item" href="<?= e($menuLinks['ket_qua_thi']) ?>" target="_blank"><i
                                             class="bi bi-file-earmark-text me-2"></i>Kết quả thi</a></li>
                             <?php endif; ?>
                         </ul>
@@ -601,7 +603,7 @@ function buildFilterUrl($newParams = [])
                             onchange="this.form.submit()">
                             <option value="">-- Tất cả --</option>
                             <?php foreach ($danhSachGiangVien as $gv): ?>
-                                <option value="<?= $gv['id'] ?>" <?= $giangVienFilter == $gv['id'] ? 'selected' : '' ?>>
+                                <option value="<?= e($gv['id']) ?>" <?= $giangVienFilter == $gv['id'] ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($gv['ho_ten']) ?>
                                 </option>
                             <?php endforeach; ?>
@@ -630,12 +632,12 @@ function buildFilterUrl($newParams = [])
             <div class="d-flex align-items-center gap-3">
                 <div class="sort-dropdown d-flex align-items-center gap-2">
                     <label class="mb-0 text-nowrap">Sắp xếp theo:</label>
-                    <select class="form-select" onchange="window.location.href=this.value" style="width: auto;">
+                    <select class="form-select" onchange="secureNavigate(this.value" style="width: auto);">
                         <option
-                            value="?he_dao_tao=<?= $heDaoTao ?>&search=<?= urlencode($search) ?>&giang_vien=<?= $giangVienFilter ?>&sort=created_at_desc"
+                            value="?he_dao_tao=<?= e($heDaoTao) ?>&search=<?= urlencode($search) ?>&giang_vien=<?= e($giangVienFilter) ?>&sort=created_at_desc"
                             <?= $sortBy === 'created_at_desc' ? 'selected' : '' ?>>Mới nhất</option>
                         <option
-                            value="?he_dao_tao=<?= $heDaoTao ?>&search=<?= urlencode($search) ?>&giang_vien=<?= $giangVienFilter ?>&sort=created_at_asc"
+                            value="?he_dao_tao=<?= e($heDaoTao) ?>&search=<?= urlencode($search) ?>&giang_vien=<?= e($giangVienFilter) ?>&sort=created_at_asc"
                             <?= $sortBy === 'created_at_asc' ? 'selected' : '' ?>>Cũ nhất</option>
 
                     </select>
@@ -676,7 +678,7 @@ function buildFilterUrl($newParams = [])
                             <div class="col-md-6 mb-2">
                                 <strong>Số lượng còn:</strong>
                                 <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold">
-                                    <?= $dt['con_lai'] ?> / <?= $dt['so_luong_sv'] ?> chỗ
+                                    <?= e($dt['con_lai']) ?> / <?= e($dt['so_luong_sv']) ?> chỗ
                                 </span>
                             </div>
                             <div class="col-md-6 mb-2">

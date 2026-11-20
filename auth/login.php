@@ -22,7 +22,7 @@ $success = getFlashMessage('success');
 // Xử lý đăng nhập
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Kiểm tra CSRF token
-    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+    if (!validateCSRF($_POST['csrf_token'] ?? null)) {
         $error = 'Token bảo mật không hợp lệ';
     } else {
         $email = sanitize($_POST['email'] ?? '');
@@ -33,13 +33,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Vui lòng nhập đầy đủ thông tin';
         } else {
             $nguoiDungModel = new NguoiDungModel();
-            $result = $nguoiDungModel->login($email, $password);
+            $result = authenticateSchoolAccount($email, $password);
 
             if ($result['success']) {
                 // Kiểm tra vai trò nếu có lọc
                 if (!empty($role_filter) && $result['user']['vai_tro'] !== $role_filter) {
                     $error = 'Tài khoản này không có quyền truy cập';
                 } else {
+                    createSecureSession($result['user']);
                     // Regenerate session ID để bảo mật
                     session_regenerate_id(true);
 
@@ -129,9 +130,11 @@ switch ($context) {
 <html lang="vi">
 
 <head>
+<meta name="csrf-token" content="<?= e(generateCSRF()) ?>">
+<script src="<?= e(BASE_URL) ?>assets/js/security.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $page_title ?> - Hệ thống QLĐT</title>
+    <title><?= e($page_title) ?> - Hệ thống QLĐT</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
@@ -141,7 +144,7 @@ switch ($context) {
     <style>
         :root {
             --theme-color:
-                <?= $theme_color ?>
+                <?= e($theme_color) ?>
             ;
         }
 
@@ -620,15 +623,15 @@ switch ($context) {
                     <div class="logo-wrapper">
                         <img src="../assets/images/logo.png" alt="TVU Logo" class="logo-img">
                     </div>
-                    <div class="login-title"><?= $page_title ?></div>
+                    <div class="login-title"><?= e($page_title) ?></div>
                     <?php if ($context_badge): ?>
                         <div class="specialty-badge"
-                            style="background: linear-gradient(135deg, <?= $theme_color ?> 0%, <?= $theme_color ?>cc 100%); color: white; padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; margin: 8px 0 12px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                            <i class="<?= $context_icon ?>"></i>
-                            <?= $context_badge ?>
+                            style="background: linear-gradient(135deg, <?= e($theme_color) ?> 0%, <?= e($theme_color) ?>cc 100%); color: white; padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; margin: 8px 0 12px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                            <i class="<?= e($context_icon) ?>"></i>
+                            <?= e($context_badge) ?>
                         </div>
                     <?php endif; ?>
-                    <div class="login-subtitle"><?= $page_subtitle ?></div>
+                    <div class="login-subtitle"><?= e($page_subtitle) ?></div>
                     <div>
                         <span class="faculty-tag">
                             <i class="bi bi-mortarboard-fill"></i> Khoa Công Nghệ Thông Tin
@@ -638,25 +641,25 @@ switch ($context) {
 
                 <?php if ($error): ?>
                     <div class="alert alert-danger alert-dismissible fade show">
-                        <?= $error ?>
+                        <?= e($error) ?>
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 <?php endif; ?>
 
                 <?php if ($success): ?>
                     <div class="alert alert-success alert-dismissible fade show">
-                        <i class="bi bi-check-circle"></i> <?= $success ?>
+                        <i class="bi bi-check-circle"></i> <?= e($success) ?>
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" action="">
+                <form method="POST" action=""><?= csrf_field() ?>
                     <!-- CSRF Token -->
-                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                    <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token']) ?>">
 
                     <!-- Role filter nếu có -->
                     <?php if (!empty($role_filter)): ?>
-                        <input type="hidden" name="role_filter" value="<?= $role_filter ?>">
+                        <input type="hidden" name="role_filter" value="<?= e($role_filter) ?>">
                     <?php endif; ?>
 
                     <div class="input-group">

@@ -324,6 +324,8 @@ if (isset($_GET['export']) && $_GET['export'] === 'pdf') {
     <!DOCTYPE html>
     <html lang="vi">
     <head>
+<meta name="csrf-token" content="<?= e(generateCSRF()) ?>">
+<script src="<?= e(BASE_URL) ?>assets/js/security.js"></script>
         <meta charset="UTF-8">
         <title></title>
       <style>
@@ -467,7 +469,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'pdf') {
 </style>
         
         <h2><?= $exportMode == 1 ? 'DANH SÁCH PHÂN CÔNG' : 'DANH SÁCH PHÂN CÔNG CHẤM' ?></h2>
-        <p class="phu-de">BÁO CÁO THỰC TẬP ĐỒ ÁN <?= $heLabel ?></p>
+        <p class="phu-de">BÁO CÁO THỰC TẬP ĐỒ ÁN <?= e($heLabel) ?></p>
         <p class="dinh-kem">(Đính kèm Kế hoạch số <?= htmlspecialchars($soKeHoach) ?>/KH-KT&CN ngày <?= htmlspecialchars($ngayKeHoachFormatted) ?>)</p>
         
         <table>
@@ -889,21 +891,21 @@ include_once __DIR__ . '/../includes/header.php';
                     <a class="nav-link <?= $loaiDeTai === 'co_so_nganh' ? 'active' : '' ?>" 
                        href="?loai=co_so_nganh<?= $giangVienId ? '&giang_vien_id=' . $giangVienId : '' ?><?= $lop ? '&lop=' . urlencode($lop) : '' ?>">
                         <i class="bi bi-journal-code"></i> Cơ sở ngành
-                        <span class="badge bg-<?= $loaiDeTai === 'co_so_nganh' ? 'primary' : 'secondary' ?> ms-1"><?= $tongCSN ?></span>
+                        <span class="badge bg-<?= $loaiDeTai === 'co_so_nganh' ? 'primary' : 'secondary' ?> ms-1"><?= e($tongCSN) ?></span>
                     </a>
                 </li>
                 <li class="nav-item" role="presentation">
                     <a class="nav-link <?= $loaiDeTai === 'chuyen_nganh' ? 'active' : '' ?>" 
                        href="?loai=chuyen_nganh<?= $giangVienId ? '&giang_vien_id=' . $giangVienId : '' ?><?= $lop ? '&lop=' . urlencode($lop) : '' ?>">
                         <i class="bi bi-mortarboard"></i> Chuyên ngành
-                        <span class="badge bg-<?= $loaiDeTai === 'chuyen_nganh' ? 'success' : 'secondary' ?> ms-1"><?= $tongCN ?></span>
+                        <span class="badge bg-<?= $loaiDeTai === 'chuyen_nganh' ? 'success' : 'secondary' ?> ms-1"><?= e($tongCN) ?></span>
                     </a>
                 </li>
             </ul>
 
             <!-- Hidden form for export functionality -->
             <form method="GET" action="" id="filterForm" style="display: none;">
-                <input type="hidden" name="loai" value="<?= $loaiDeTai ?>">
+                <input type="hidden" name="loai" value="<?= e($loaiDeTai) ?>">
             </form>
 
             <div class="table-card">
@@ -1244,7 +1246,7 @@ function exportWithMode(mode) {
     }
     
     // Chuyển hướng đến URL xuất
-    window.location.href = url;
+    secureNavigate(url);
 }
 
 // Reset modal khi đóng

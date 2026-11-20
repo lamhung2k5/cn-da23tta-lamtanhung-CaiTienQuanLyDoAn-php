@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/bootstrap.php';
 /**
  * CHI TIẾT GIẢNG VIÊN - VERSION 2
  * Phiên bản đơn giản, không phụ thuộc vào framework
@@ -6,11 +7,11 @@
 
 // Bật hiển thị lỗi
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 
 // Lấy email từ URL
 $email = $_GET['email'] ?? '';
-$filter = $_GET['filter'] ?? 'da_duyet'; // Mặc định chỉ hiển thị đề tài đã duyệt
+$filter = 'da_duyet'; // Mặc định chỉ hiển thị đề tài đã duyệt
 $he_dao_tao_filter = $_GET['he_dao_tao'] ?? 'all'; // Bộ lọc hệ đào tạo
 
 if (empty($email)) {
@@ -19,6 +20,8 @@ if (empty($email)) {
     <html lang="vi">
 
     <head>
+<meta name="csrf-token" content="<?= e(generateCSRF()) ?>">
+<script src="<?= e(BASE_URL) ?>assets/js/security.js"></script>
         <meta charset="UTF-8">
         <title>Lỗi - Thiếu tham số</title>
         <style>
@@ -60,6 +63,8 @@ try {
     <html lang="vi">
 
     <head>
+<meta name="csrf-token" content="<?= e(generateCSRF()) ?>">
+<script src="<?= e(BASE_URL) ?>assets/js/security.js"></script>
         <meta charset="UTF-8">
         <title>Lỗi Database</title>
         <style>
@@ -80,7 +85,7 @@ try {
     <body>
         <div class="error">
             <h2>Lỗi kết nối Database</h2>
-            <p><?= htmlspecialchars($e->getMessage()) ?></p>
+            <p><?= htmlspecialchars(safeError($e)) ?></p>
             <p><a href="khoa_cntt.php">← Quay lại</a></p>
         </div>
     </body>
@@ -187,6 +192,8 @@ foreach ($tatCaDeTai as $dt) {
 <html lang="vi">
 
 <head>
+<meta name="csrf-token" content="<?= e(generateCSRF()) ?>">
+<script src="<?= e(BASE_URL) ?>assets/js/security.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chi tiết giảng viên - <?= htmlspecialchars($nguoiDung['ho_ten']) ?></title>
@@ -622,13 +629,13 @@ foreach ($tatCaDeTai as $dt) {
                     <a href="?email=<?= urlencode($email) ?>&filter=all&he_dao_tao=co_so_nganh"
                         class="filter-btn <?= $he_dao_tao_filter === 'co_so_nganh' ? 'active' : '' ?>">
                         <span class="text-primary fw-bold">Cơ sở ngành</span>
-                        <span class="filter-count"><?= $thongKe['co_so_nganh'] ?></span>
+                        <span class="filter-count"><?= e($thongKe['co_so_nganh']) ?></span>
                     </a>
 
                     <a href="?email=<?= urlencode($email) ?>&filter=all&he_dao_tao=chuyen_nganh"
                         class="filter-btn <?= $he_dao_tao_filter === 'chuyen_nganh' ? 'active' : '' ?>">
                         <span class="text-success fw-bold">Chuyên ngành</span>
-                        <span class="filter-count"><?= $thongKe['chuyen_nganh'] ?></span>
+                        <span class="filter-count"><?= e($thongKe['chuyen_nganh']) ?></span>
                     </a>
                 </div>
             </div>
@@ -705,7 +712,7 @@ foreach ($tatCaDeTai as $dt) {
                                 </span>
                                 <span class="me-3">
                                     <i class="bi bi-people"></i>
-                                    <?= $deTai['so_luong_sv'] ?> sinh viên
+                                    <?= e($deTai['so_luong_sv']) ?> sinh viên
                                 </span>
                                 <span class="me-3">
                                     <i class="bi bi-calendar"></i>
@@ -733,8 +740,8 @@ foreach ($tatCaDeTai as $dt) {
                                             $statusText = ucfirst($deTai['trang_thai']);
                                     }
                                     ?>
-                                    <span class="status-badge status-<?= $deTai['trang_thai'] ?>">
-                                        <?= $statusText ?>
+                                    <span class="status-badge status-<?= e($deTai['trang_thai']) ?>">
+                                        <?= e($statusText) ?>
                                     </span>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
@@ -752,7 +759,7 @@ foreach ($tatCaDeTai as $dt) {
                                         <i class="bi bi-envelope"></i> Liên hệ
                                     </a>
                                     <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                        data-bs-target="#detailModal<?= $deTai['id'] ?>" title="Xem chi tiết đề tài">
+                                        data-bs-target="#detailModal<?= e($deTai['id']) ?>" title="Xem chi tiết đề tài">
                                         <i class="bi bi-search"></i> Xem chi tiết
                                     </button>
                                 </div>
@@ -760,12 +767,12 @@ foreach ($tatCaDeTai as $dt) {
                         </div>
 
                         <!-- Modal chi tiết đề tài -->
-                        <div class="modal fade" id="detailModal<?= $deTai['id'] ?>" tabindex="-1"
-                            aria-labelledby="detailModalLabel<?= $deTai['id'] ?>" aria-hidden="true">
+                        <div class="modal fade" id="detailModal<?= e($deTai['id']) ?>" tabindex="-1"
+                            aria-labelledby="detailModalLabel<?= e($deTai['id']) ?>" aria-hidden="true">
                             <div class="modal-dialog modal-lg">
                                 <div class="modal-content">
                                     <div class="modal-header bg-primary text-white">
-                                        <h5 class="modal-title" id="detailModalLabel<?= $deTai['id'] ?>">
+                                        <h5 class="modal-title" id="detailModalLabel<?= e($deTai['id']) ?>">
                                             <i class="bi bi-journal-text"></i> Chi tiết đề tài
                                         </h5>
                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
@@ -802,7 +809,7 @@ foreach ($tatCaDeTai as $dt) {
                                             </div>
                                             <div class="col-md-4">
                                                 <strong><i class="bi bi-people"></i> Số lượng sinh viên:</strong><br>
-                                                <span class="text-muted"><?= $deTai['so_luong_sv'] ?> sinh viên</span>
+                                                <span class="text-muted"><?= e($deTai['so_luong_sv']) ?> sinh viên</span>
                                             </div>
                                             <div class="col-md-4">
                                                 <strong><i class="bi bi-calendar"></i> Ngày tạo:</strong><br>

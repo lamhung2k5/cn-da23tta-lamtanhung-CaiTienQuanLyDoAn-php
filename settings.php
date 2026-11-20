@@ -48,21 +48,21 @@ include 'includes/header.php';
                 <div class="card-body">
                     <?php if ($error): ?>
                         <div class="alert alert-danger alert-dismissible fade show">
-                            <i class="bi bi-exclamation-circle"></i> <?= $error ?>
+                            <i class="bi bi-exclamation-circle"></i> <?= e($error) ?>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     <?php endif; ?>
 
                     <?php if ($success): ?>
                         <div class="alert alert-success alert-dismissible fade show">
-                            <i class="bi bi-check-circle"></i> <?= $success ?>
+                            <i class="bi bi-check-circle"></i> <?= e($success) ?>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     <?php endif; ?>
 
                     <!-- Đổi mật khẩu -->
                     <h5 class="mb-3"><i class="bi bi-key"></i> Đổi mật khẩu</h5>
-                    <form method="POST" action="">
+                    <form method="POST" action=""><?= csrf_field() ?>
                         <div class="mb-3">
                             <label class="form-label">Mật khẩu hiện tại <span class="text-danger">*</span></label>
                             <input type="password" name="old_password" class="form-control" required>

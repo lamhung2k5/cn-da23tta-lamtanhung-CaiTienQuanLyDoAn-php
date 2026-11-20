@@ -4,6 +4,7 @@
  */
 
 require_once '../bootstrap.php';
+requirePost();
 
 // Cho phép cả giảng viên và lãnh đạo truy cập
 if (!isLoggedIn() || ($_SESSION['vai_tro'] !== ROLE_GIANG_VIEN && $_SESSION['vai_tro'] !== ROLE_LANH_DAO)) {

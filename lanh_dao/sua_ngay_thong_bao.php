@@ -4,6 +4,7 @@
  */
 
 require_once '../bootstrap.php';
+requireRole(ROLE_LANH_DAO);
 
 $db = Database::getInstance()->getConnection();
 $message = '';
@@ -52,6 +53,8 @@ $today = date('Y-m-d');
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+<meta name="csrf-token" content="<?= e(generateCSRF()) ?>">
+<script src="<?= e(BASE_URL) ?>assets/js/security.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sửa Ngày Thông Báo</title>
@@ -103,12 +106,12 @@ $today = date('Y-m-d');
         </h1>
         
         <div class="alert alert-info">
-            <strong>Ngày hôm nay:</strong> <?= date('d/m/Y', strtotime($today)) ?> (<?= $today ?>)
+            <strong>Ngày hôm nay:</strong> <?= date('d/m/Y', strtotime($today)) ?> (<?= e($today) ?>)
         </div>
         
         <?php if ($message): ?>
             <div class="alert alert-success alert-dismissible fade show">
-                <?= $message ?>
+                <?= e($message) ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
@@ -148,12 +151,12 @@ $today = date('Y-m-d');
             $statusIcon = $isActive ? 'bi-check-circle-fill text-success' : 'bi-x-circle-fill text-danger';
             ?>
             
-            <div class="notification-card <?= $cardClass ?>">
+            <div class="notification-card <?= e($cardClass) ?>">
                 <div class="row">
                     <div class="col-md-8">
                         <h4>
-                            <i class="bi <?= $statusIcon ?>"></i>
-                            #<?= $tb['id'] ?>: <?= htmlspecialchars($tb['tieu_de']) ?>
+                            <i class="bi <?= e($statusIcon) ?>"></i>
+                            #<?= e($tb['id']) ?>: <?= htmlspecialchars($tb['tieu_de']) ?>
                         </h4>
                         
                         <div class="date-info">
@@ -191,18 +194,18 @@ $today = date('Y-m-d');
                         <h6>Thao tác nhanh:</h6>
                         
                         <!-- Đặt ngày = hôm nay -->
-                        <form method="POST" style="display: inline;">
+                        <form method="POST" style="display: inline;"><?= csrf_field() ?>
                             <input type="hidden" name="action" value="set_today">
-                            <input type="hidden" name="id" value="<?= $tb['id'] ?>">
+                            <input type="hidden" name="id" value="<?= e($tb['id']) ?>">
                             <button type="submit" class="btn btn-success btn-sm btn-action">
                                 <i class="bi bi-calendar-check"></i> Đặt hôm nay → +1 tháng
                             </button>
                         </form>
                         
                         <!-- Xóa ngày (hiển thị vĩnh viễn) -->
-                        <form method="POST" style="display: inline;">
+                        <form method="POST" style="display: inline;"><?= csrf_field() ?>
                             <input type="hidden" name="action" value="clear_dates">
-                            <input type="hidden" name="id" value="<?= $tb['id'] ?>">
+                            <input type="hidden" name="id" value="<?= e($tb['id']) ?>">
                             <button type="submit" class="btn btn-info btn-sm btn-action">
                                 <i class="bi bi-infinity"></i> Hiển thị vĩnh viễn
                             </button>
@@ -210,25 +213,25 @@ $today = date('Y-m-d');
                         
                         <!-- Form tùy chỉnh -->
                         <button class="btn btn-warning btn-sm btn-action" type="button" 
-                                data-bs-toggle="collapse" data-bs-target="#form<?= $tb['id'] ?>">
+                                data-bs-toggle="collapse" data-bs-target="#form<?= e($tb['id']) ?>">
                             <i class="bi bi-pencil"></i> Tùy chỉnh
                         </button>
                         
-                        <div class="collapse mt-3" id="form<?= $tb['id'] ?>">
-                            <form method="POST" class="border p-3 rounded bg-white">
+                        <div class="collapse mt-3" id="form<?= e($tb['id']) ?>">
+                            <form method="POST" class="border p-3 rounded bg-white"><?= csrf_field() ?>
                                 <input type="hidden" name="action" value="update_dates">
-                                <input type="hidden" name="id" value="<?= $tb['id'] ?>">
+                                <input type="hidden" name="id" value="<?= e($tb['id']) ?>">
                                 
                                 <div class="mb-2">
                                     <label class="form-label">Ngày bắt đầu:</label>
                                     <input type="date" name="ngay_bat_dau" class="form-control form-control-sm" 
-                                           value="<?= $tb['ngay_bat_dau'] ?>">
+                                           value="<?= e($tb['ngay_bat_dau']) ?>">
                                 </div>
                                 
                                 <div class="mb-2">
                                     <label class="form-label">Ngày kết thúc:</label>
                                     <input type="date" name="ngay_ket_thuc" class="form-control form-control-sm" 
-                                           value="<?= $tb['ngay_ket_thuc'] ?>">
+                                           value="<?= e($tb['ngay_ket_thuc']) ?>">
                                 </div>
                                 
                                 <button type="submit" class="btn btn-primary btn-sm w-100">

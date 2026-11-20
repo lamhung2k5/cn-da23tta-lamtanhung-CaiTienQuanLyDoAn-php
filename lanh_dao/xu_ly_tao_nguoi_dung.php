@@ -5,6 +5,7 @@
 
 require_once '../bootstrap.php';
 requireRole(ROLE_LANH_DAO);
+requirePost();
 
 $redirectUrl = 'lanh_dao/quan_ly_nguoi_dung.php';
 
@@ -15,6 +16,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $matKhau = $_POST['mat_khau'] ?? '';
     $xacNhanMatKhau = $_POST['xac_nhan_mat_khau'] ?? '';
 
+    if (!in_array($vaiTro, [ROLE_SINH_VIEN, ROLE_GIANG_VIEN, ROLE_LANH_DAO], true)) { securityDeny(400, 'Vai trò không hợp lệ.'); }
+    if (strlen($matKhau) > 72) { securityDeny(400, 'Mật khẩu tối đa 72 byte.'); }
+    if ($vaiTro === ROLE_LANH_DAO) {
+        $actor = (new NguoiDungModel())->findById($_SESSION['user_id']);
+        if (!authenticateSchoolAccount($actor['email'], $_POST['current_password'] ?? '')['success']) {
+            securityDeny(403, 'Cấp tài khoản Lãnh đạo cần xác nhận mật khẩu hiện tại.');
+        }
+    }
     // Validate
     if (empty($vaiTro) || empty($email) || empty($hoTen) || empty($matKhau)) {
         setFlashMessage('error', 'Vui lòng nhập đầy đủ thông tin');
@@ -109,7 +118,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             break;
     }
 
+    $db = Database::getInstance()->getConnection();
     try {
+        $db->beginTransaction();
         // Lấy vai_tro_id từ mã vai trò
         $vaiTroModel = new VaiTroModel();
         $vaiTroInfo = $vaiTroModel->findByMa($vaiTro);
@@ -147,13 +158,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     break;
             }
 
+            auditSecurity('account.create.' . $vaiTro, (int)$nguoiDungId);
+            $db->commit();
             setFlashMessage('success', 'Tạo tài khoản thành công');
         } else {
             setFlashMessage('error', 'Không thể tạo tài khoản');
         }
 
-    } catch (Exception $e) {
-        setFlashMessage('error', 'Lỗi hệ thống: ' . $e->getMessage());
+    } catch (Throwable $e) {
+        if ($db->inTransaction()) { $db->rollBack(); }
+        setFlashMessage('error', 'Lỗi hệ thống: ' . safeError($e));
     }
 }
 

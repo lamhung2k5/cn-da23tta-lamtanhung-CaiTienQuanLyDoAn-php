@@ -4,6 +4,7 @@
  */
 
 require_once '../bootstrap.php';
+requirePost();
 
 // Cho phép cả giảng viên và lãnh đạo truy cập
 if (!isLoggedIn() || ($_SESSION['vai_tro'] !== ROLE_GIANG_VIEN && $_SESSION['vai_tro'] !== ROLE_LANH_DAO)) {
@@ -17,16 +18,16 @@ $deTaiModel = new DeTaiModel();
 $giangVien = $giangVienModel->getByNguoiDungId($user['id']);
 
 // Lấy ID đề tài
-$deTaiId = (int)($_GET['id'] ?? 0);
+$deTaiId = (int)($_POST['id'] ?? 0);
 
 if (!$deTaiId) {
     setFlashMessage('error', 'Đề tài không tồn tại');
     redirect('giang_vien/danh_sach_de_tai.php');
 }
 
-$deTai = $deTaiModel->findById($deTaiId);
+$deTai = requireTopicOwner($deTaiId);
 
-if (!$deTai || $deTai['giang_vien_id'] != $giangVien['id']) {
+if (!$deTai || (!hasRole(ROLE_LANH_DAO) && $deTai['giang_vien_id'] != ($giangVien['id'] ?? 0))) {
     setFlashMessage('error', 'Bạn không có quyền xóa đề tài này');
     redirect('giang_vien/danh_sach_de_tai.php?loai=' . ($deTai['he_dao_tao'] ?? 'co_so_nganh'));
 }
@@ -51,7 +52,7 @@ try {
     $deTaiModel->delete($deTaiId);
     setFlashMessage('success', 'Xóa đề tài thành công');
 } catch (Exception $e) {
-    setFlashMessage('error', 'Lỗi: ' . $e->getMessage());
+    setFlashMessage('error', 'Lỗi: ' . safeError($e));
 }
 
 redirect('giang_vien/danh_sach_de_tai.php?loai=' . $loaiDeTai);

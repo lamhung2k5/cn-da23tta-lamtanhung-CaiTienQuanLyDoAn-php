@@ -4,6 +4,7 @@
  */
 
 require_once '../bootstrap.php';
+requirePost();
 
 // Cho phép cả giảng viên và lãnh đạo truy cập
 if (!isLoggedIn() || ($_SESSION['vai_tro'] !== ROLE_GIANG_VIEN && $_SESSION['vai_tro'] !== ROLE_LANH_DAO)) {
@@ -34,10 +35,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_approval'])) {
     
     foreach ($selectedTopics as $deTaiId) {
         $deTaiId = (int)$deTaiId;
-        $deTai = $deTaiModel->findById($deTaiId);
+        $deTai = requireTopicOwner($deTaiId);
         
         // Kiểm tra quyền và trạng thái
-        if (!$deTai || $deTai['giang_vien_id'] != $giangVien['id']) {
+        if (!$deTai || (!hasRole(ROLE_LANH_DAO) && $deTai['giang_vien_id'] != ($giangVien['id'] ?? 0))) {
             $errors[] = "Không có quyền gửi đề tài ID: $deTaiId";
             $errorCount++;
             continue;
@@ -71,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_approval'])) {
             
             $successCount++;
         } catch (Exception $e) {
-            $errors[] = "Lỗi khi gửi đề tài \"{$deTai['tieu_de']}\": " . $e->getMessage();
+            $errors[] = "Lỗi khi gửi đề tài \"{$deTai['tieu_de']}\": " . safeError($e);
             $errorCount++;
         }
     }
@@ -89,16 +90,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_approval'])) {
 }
 
 // Xử lý gửi duyệt đơn lẻ (giữ nguyên logic cũ)
-$deTaiId = (int)($_GET['id'] ?? 0);
+$deTaiId = (int)($_POST['id'] ?? 0);
 
 if (!$deTaiId) {
     setFlashMessage('error', 'Đề tài không tồn tại');
     redirect('giang_vien/danh_sach_de_tai.php');
 }
 
-$deTai = $deTaiModel->findById($deTaiId);
+$deTai = requireTopicOwner($deTaiId);
 
-if (!$deTai || $deTai['giang_vien_id'] != $giangVien['id']) {
+if (!$deTai || (!hasRole(ROLE_LANH_DAO) && $deTai['giang_vien_id'] != ($giangVien['id'] ?? 0))) {
     setFlashMessage('error', 'Bạn không có quyền gửi đề tài này');
     redirect('giang_vien/danh_sach_de_tai.php?loai=' . ($deTai['he_dao_tao'] ?? 'co_so_nganh'));
 }
@@ -137,7 +138,7 @@ try {
     
     setFlashMessage('success', 'Gửi đề tài chờ duyệt thành công');
 } catch (Exception $e) {
-    setFlashMessage('error', 'Lỗi: ' . $e->getMessage());
+    setFlashMessage('error', 'Lỗi: ' . safeError($e));
 }
 
 redirect('giang_vien/danh_sach_de_tai.php?loai=' . $loaiDeTai);

@@ -38,3 +38,5 @@ logs/
 # Private database snapshots and local verification artifacts
 /storage/backups/
 /storage/baseline/
+
+/storage/security/

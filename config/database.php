@@ -68,21 +68,11 @@ class Database
             $this->conn = new PDO($dsn, DB_USER, DB_PASS, $options);
             $this->conn->exec("SET NAMES utf8mb4");
         } catch (PDOException $e) {
-            // Trường hợp môi trường local dev chưa khởi tạo user qldt_user
-            if (DB_USER !== 'root') {
-                try {
-                    $this->conn = new PDO($dsn, 'root', '', $options);
-                    $this->conn->exec("SET NAMES utf8mb4");
-                    return;
-                } catch (PDOException $ex) {
-                    // Giữ lỗi ban đầu nếu fallback cũng thất bại
-                }
-            }
             error_log("Database Connection Error: " . $e->getMessage());
-            throw new Exception("Không thể kết nối đến database: " . $e->getMessage());
+            throw new RuntimeException('Không thể kết nối đến database.');
         } catch (Exception $e) {
             error_log("Database Error: " . $e->getMessage());
-            throw new Exception("Lỗi database: " . $e->getMessage());
+            throw new RuntimeException('Không thể kết nối đến database.');
         }
     }
 
@@ -114,11 +104,13 @@ class Database
                 $this->conn->query('SELECT 1');
             } catch (PDOException $e) {
                 // MySQL server has gone away or lost connection
-                if (stripos($e->getMessage(), '2006') !== false || stripos($e->getMessage(), 'gone away') !== false) {
+                $driverCode = (int)($e->errorInfo[1] ?? 0);
+                if (in_array($driverCode, [2006, 2013], true)) {
                     error_log("Database connection lost, reconnecting...");
                     $this->connect();
                 } else {
-                    throw new Exception("Lỗi kết nối database: " . $e->getMessage());
+                    error_log('Database Error: ' . $e->getMessage());
+                    throw new RuntimeException('Lỗi kết nối database.');
                 }
             }
         }

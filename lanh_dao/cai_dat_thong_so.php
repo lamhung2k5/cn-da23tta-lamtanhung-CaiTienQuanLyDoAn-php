@@ -161,7 +161,7 @@ include_once __DIR__ . '/../includes/header.php';
             <?php if (isset($_SESSION['success'])): ?>
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     <i class="bi bi-check-circle me-2"></i>
-                    <?= $_SESSION['success'] ?>
+                    <?= e($_SESSION['success']) ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
                 <?php unset($_SESSION['success']); ?>
@@ -170,7 +170,7 @@ include_once __DIR__ . '/../includes/header.php';
             <?php if (isset($_SESSION['error'])): ?>
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     <i class="bi bi-exclamation-triangle me-2"></i>
-                    <?= $_SESSION['error'] ?>
+                    <?= e($_SESSION['error']) ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
                 <?php unset($_SESSION['error']); ?>
@@ -251,22 +251,22 @@ include_once __DIR__ . '/../includes/header.php';
                                                         <div class="fw-bold"><?= htmlspecialchars($gv['ho_ten'] ?? 'N/A') ?>
                                                         </div>
                                                         <small class="text-muted">
-                                                            Đã đăng ký (chờ duyệt + đã duyệt): CSN là <?= $daDangKyCSN ?> SV
-                                                            | CN là <?= $daDangKyCN ?> SV
+                                                            Đã đăng ký (chờ duyệt + đã duyệt): CSN là <?= e($daDangKyCSN) ?> SV
+                                                            | CN là <?= e($daDangKyCN) ?> SV
                                                         </small>
                                                     </td>
                                                     <td class="text-center">
                                                         <input type="number" class="input-number-modern auto-save-input"
-                                                            data-giang-vien-id="<?= $gv['id'] ?>" data-loai="csn"
-                                                            value="<?= $gioiHanCSN ?>" min="<?= $daDangKyCSN ?>" max="100"
-                                                            title="Tối thiểu: <?= $daDangKyCSN ?> (đã đăng ký bao gồm chờ duyệt)"
+                                                            data-giang-vien-id="<?= e($gv['id']) ?>" data-loai="csn"
+                                                            value="<?= e($gioiHanCSN) ?>" min="<?= e($daDangKyCSN) ?>" max="100"
+                                                            title="Tối thiểu: <?= e($daDangKyCSN) ?> (đã đăng ký bao gồm chờ duyệt)"
                                                             required>
                                                     </td>
                                                     <td class="text-center">
                                                         <input type="number" class="input-number-modern auto-save-input"
-                                                            data-giang-vien-id="<?= $gv['id'] ?>" data-loai="cn"
-                                                            value="<?= $gioiHanCN ?>" min="<?= $daDangKyCN ?>" max="100"
-                                                            title="Tối thiểu: <?= $daDangKyCN ?> (đã đăng ký bao gồm chờ duyệt)"
+                                                            data-giang-vien-id="<?= e($gv['id']) ?>" data-loai="cn"
+                                                            value="<?= e($gioiHanCN) ?>" min="<?= e($daDangKyCN) ?>" max="100"
+                                                            title="Tối thiểu: <?= e($daDangKyCN) ?> (đã đăng ký bao gồm chờ duyệt)"
                                                             required>
                                                     </td>
                                                 </tr>
@@ -295,7 +295,7 @@ include_once __DIR__ . '/../includes/header.php';
                                     Cài đặt kế hoạch số và ngày tháng hiển thị trong danh sách khi được xuất ra.
                                 </p>
 
-                                <form method="POST" action="xu_ly_cai_dat.php">
+                                <form method="POST" action="xu_ly_cai_dat.php"><?= csrf_field() ?>
                                     <input type="hidden" name="action" value="update_ke_hoach">
 
                                     <div class="row g-3">
@@ -348,7 +348,7 @@ include_once __DIR__ . '/../includes/header.php';
                                 <hr class="my-5">
 
                                 <!-- Form kế hoạch đồ án chuyên ngành -->
-                                <form method="POST" action="xu_ly_cai_dat.php" class="mt-4">
+                                <form method="POST" action="xu_ly_cai_dat.php" class="mt-4"><?= csrf_field() ?>
                                     <input type="hidden" name="action" value="update_ke_hoach_cn">
 
                                     <div class="row g-3">
@@ -700,7 +700,7 @@ include_once __DIR__ . '/../includes/header.php';
 
                 <div id="alertContainer"></div>
 
-                <form method="POST" action="xu_ly_tao_nguoi_dung.php" id="createUserForm">
+                <form method="POST" action="xu_ly_tao_nguoi_dung.php" id="createUserForm"><?= csrf_field() ?>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Vai trò <span class="text-danger">*</span></label>

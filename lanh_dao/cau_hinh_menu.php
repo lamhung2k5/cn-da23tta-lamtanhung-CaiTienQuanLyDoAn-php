@@ -23,6 +23,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'bieu_mau_giang_vien' => $_POST['bieu_mau_giang_vien'] ?? ''
     ];
 
+    foreach ($links as $key => $value) {
+        if (!is_string($value) || ($value !== '' && (!filter_var($value, FILTER_VALIDATE_URL) || !in_array(strtolower(parse_url($value, PHP_URL_SCHEME) ?? ''), ['http','https'], true)))) {
+            securityDeny(400, 'Liên kết phải là URL HTTP hoặc HTTPS hợp lệ.');
+        }
+    }
     if (file_put_contents($configFile, json_encode($links, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))) {
         $message = 'Cập nhật cấu hình thành công';
         $messageType = 'success';
@@ -1304,7 +1309,7 @@ include_once __DIR__ . '/../includes/header.php';
 
             <!-- Success/Error Messages -->
             <?php if ($message): ?>
-                <div class="alert alert-modern alert-<?= $messageType ?> fade-in-up">
+                <div class="alert alert-modern alert-<?= e($messageType) ?> fade-in-up">
                     <i
                         class="bi bi-<?= $messageType === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill' ?> me-2"></i>
                     <?= htmlspecialchars($message) ?>
@@ -1319,7 +1324,7 @@ include_once __DIR__ . '/../includes/header.php';
                             <i class="bi bi-gear me-2"></i>Cấu hình liên kết hệ thống
                         </div>
                         <div class="card-body-modern">
-                            <form method="POST" id="configForm">
+                            <form method="POST" id="configForm"><?= csrf_field() ?>
                                 <!-- Kết quả thi -->
                                 <div class="link-config-item">
                                     <div class="link-icon">
@@ -1583,7 +1588,7 @@ include_once __DIR__ . '/../includes/header.php';
             if (previewDiv) {
                 const url = input.value.trim();
                 if (url) {
-                    previewDiv.innerHTML = '<i class="bi bi-link me-1"></i>' + url;
+                    previewDiv.textContent = url;
                     previewDiv.classList.remove('empty');
                 } else {
                     previewDiv.innerHTML = 'Chưa có liên kết nào được cấu hình';
@@ -1680,7 +1685,7 @@ include_once __DIR__ . '/../includes/header.php';
 
             notification.innerHTML = `
         <i class="bi bi-${icon} me-2"></i>
-        ${message}
+        ${escapeText(message)}
         <button type="button" class="btn-close ms-auto" onclick="this.parentElement.remove()"></button>
     `;
 

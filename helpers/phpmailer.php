@@ -31,20 +31,9 @@ function sendEmailSMTP($to, $subject, $body, $toName = '') {
         $mail->Port       = SMTP_PORT;
         $mail->CharSet    = 'UTF-8';
         
-        // Tắt SSL verification để tránh lỗi OpenSSL
-        $mail->SMTPOptions = array(
-            'ssl' => array(
-                'verify_peer' => false,
-                'verify_peer_name' => false,
-                'allow_self_signed' => true
-            )
-        );
-        
-        // Nếu OpenSSL không có, thử không dùng encryption
+        // Keep certificate verification enabled; never downgrade SMTP to plaintext.
         if (!extension_loaded('openssl')) {
-            $mail->SMTPSecure = false;
-            $mail->SMTPAutoTLS = false;
-            error_log("OpenSSL not available, using non-encrypted SMTP");
+            throw new Exception('OpenSSL is required for SMTP.');
         }
         
         // Log cấu hình để debug
@@ -73,7 +62,7 @@ function sendEmailSMTP($to, $subject, $body, $toName = '') {
         }
         
     } catch (Exception $e) {
-        error_log("PHPMailer Exception: " . $e->getMessage());
+        error_log("PHPMailer Exception: " . safeError($e));
         error_log("PHPMailer ErrorInfo: " . $mail->ErrorInfo);
         return false;
     }

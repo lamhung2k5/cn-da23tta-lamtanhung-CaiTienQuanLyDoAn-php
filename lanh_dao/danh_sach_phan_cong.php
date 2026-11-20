@@ -35,7 +35,7 @@ try {
 } catch (Exception $e) {
     $danhSachPhanCongFull = [];
     $danhSachPhanCong = [];
-    error_log("Error getDanhSachPhanCong: " . $e->getMessage());
+    error_log("Error getDanhSachPhanCong: " . safeError($e));
 }
 
 // Đếm tổng số theo loại
@@ -61,7 +61,7 @@ try {
     });
 } catch (Exception $e) {
     $thongKePhanCong = [];
-    error_log("Error getThongKePhanCongTheoGiangVien: " . $e->getMessage());
+    error_log("Error getThongKePhanCongTheoGiangVien: " . safeError($e));
 }
 
 // Include header
@@ -164,11 +164,11 @@ include_once __DIR__ . '/../includes/header.php';
                                 
                                 <!-- Nút chuyển tab nhanh -->
                                 <?php if ($loaiDeTai === 'co_so_nganh'): ?>
-                                    <a href="?xem_gv=<?= $giangVienId ?>&loai=chuyen_nganh" class="btn btn-light btn-sm">
+                                    <a href="?xem_gv=<?= e($giangVienId) ?>&loai=chuyen_nganh" class="btn btn-light btn-sm">
                                         <i class="bi bi-arrow-left-right"></i> Chuyển sang CN
                                     </a>
                                 <?php else: ?>
-                                    <a href="?xem_gv=<?= $giangVienId ?>&loai=co_so_nganh" class="btn btn-light btn-sm">
+                                    <a href="?xem_gv=<?= e($giangVienId) ?>&loai=co_so_nganh" class="btn btn-light btn-sm">
                                         <i class="bi bi-arrow-left-right"></i> Chuyển sang CSN
                                     </a>
                                 <?php endif; ?>
@@ -217,18 +217,18 @@ include_once __DIR__ . '/../includes/header.php';
                                                 $maGVCham = $dangKyInfo['ma_giang_vien'] ?? null;
                                             ?>
                                                 <tr class="sinh-vien-row" 
-                                                    data-dang-ky-id="<?= $dangKyId ?>"
+                                                    data-dang-ky-id="<?= e($dangKyId) ?>"
                                                     data-sinh-vien="<?= htmlspecialchars($sv['ten_sinh_vien']) ?>"
-                                                    data-gv-cham-id="<?= $giangVienChamId ?>"
+                                                    data-gv-cham-id="<?= e($giangVienChamId) ?>"
                                                     data-gv-cham-ten="<?= htmlspecialchars($tenGVCham ?? '') ?>">
                                                     <td class="text-center"><?= $idx++ ?></td>
                                                     <td><?= htmlspecialchars($sv['ten_sinh_vien']) ?></td>
-                                                    <td><?= $sv['ma_sinh_vien'] ?></td>
+                                                    <td><?= e($sv['ma_sinh_vien']) ?></td>
                                                     <td><?= isset($sv['lop']) ? htmlspecialchars($sv['lop']) : 'N/A' ?></td>
                                                     <td><?= htmlspecialchars($sv['ten_de_tai']) ?></td>
                                                     <td class="gv-cham-cell">
                                                         <div class="custom-dropdown" 
-                                                             data-dang-ky-id="<?= $dangKyId ?>"
+                                                             data-dang-ky-id="<?= e($dangKyId) ?>"
                                                              data-sinh-vien="<?= htmlspecialchars($sv['ten_sinh_vien']) ?>">
                                                             <div class="dropdown-selected">
                                                                 <span class="selected-text">
@@ -251,7 +251,7 @@ include_once __DIR__ . '/../includes/header.php';
                                                                     <?php foreach ($danhSachGiangVien as $gv): ?>
                                                                         <?php if ($gv['id'] != $giangVienId): ?>
                                                                         <div class="dropdown-option <?= ($giangVienChamId == $gv['id']) ? 'selected' : '' ?>" 
-                                                                             data-value="<?= $gv['id'] ?>"
+                                                                             data-value="<?= e($gv['id']) ?>"
                                                                              data-text="<?= htmlspecialchars($gv['ho_ten']) ?>">
                                                                             <?= htmlspecialchars($gv['ho_ten']) ?>
                                                                         </div>
@@ -271,7 +271,7 @@ include_once __DIR__ . '/../includes/header.php';
                     </div>
                     
             <div class="mt-3">
-                <a href="danh_sach_phan_cong.php?loai=<?= $loaiDeTai ?>" class="btn btn-sm text-white" style="background-color: #0066ffff;">
+                <a href="danh_sach_phan_cong.php?loai=<?= e($loaiDeTai) ?>" class="btn btn-sm text-white" style="background-color: #0066ffff;">
                     <i class="bi bi-chevron-double-left"></i> Quay lại
                 </a>
             </div>
@@ -289,14 +289,14 @@ include_once __DIR__ . '/../includes/header.php';
                                 <a class="nav-link <?= $loaiDeTai === 'co_so_nganh' ? 'active' : '' ?>" 
                                    href="?loai=co_so_nganh">
                                     <i class="bi bi-journal-code"></i> Cơ sở ngành
-                                    <span class="badge bg-<?= $loaiDeTai === 'co_so_nganh' ? 'primary' : 'secondary' ?> ms-1"><?= $tongCSN ?></span>
+                                    <span class="badge bg-<?= $loaiDeTai === 'co_so_nganh' ? 'primary' : 'secondary' ?> ms-1"><?= e($tongCSN) ?></span>
                                 </a>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <a class="nav-link <?= $loaiDeTai === 'chuyen_nganh' ? 'active' : '' ?>" 
                                    href="?loai=chuyen_nganh">
                                     <i class="bi bi-mortarboard"></i> Chuyên ngành
-                                    <span class="badge bg-<?= $loaiDeTai === 'chuyen_nganh' ? 'success' : 'secondary' ?> ms-1"><?= $tongCN ?></span>
+                                    <span class="badge bg-<?= $loaiDeTai === 'chuyen_nganh' ? 'success' : 'secondary' ?> ms-1"><?= e($tongCN) ?></span>
                                 </a>
                             </li>
                         </ul>
@@ -349,7 +349,7 @@ include_once __DIR__ . '/../includes/header.php';
                                             </td>
                                             <td class="text-center">
                                                 <span class="text-dark fs-5 px-3 py-1">
-                                                    <?= $soLuongPhanCong ?>
+                                                    <?= e($soLuongPhanCong) ?>
                                                 </span>
                                             </td>
                                             <td class="text-center">
@@ -363,7 +363,7 @@ include_once __DIR__ . '/../includes/header.php';
                                                 <?php endif; ?>
                                             </td>
                                             <td class="text-center">
-                                                <a href="?xem_gv=<?= $tk['id'] ?>&loai=<?= $loaiDeTai ?>" class="btn btn-info btn-sm px-4 py-2">
+                                                <a href="?xem_gv=<?= e($tk['id']) ?>&loai=<?= e($loaiDeTai) ?>" class="btn btn-info btn-sm px-4 py-2">
                                                   <i class="bi bi-person-plus"></i>
                                                 </a>
                                             </td>
@@ -411,7 +411,7 @@ include_once __DIR__ . '/../includes/header.php';
                              data-ten="<?= strtolower(htmlspecialchars($gv['ho_ten'])) ?>"
                              data-ma="<?= strtolower($gv['ma_giang_vien'] ?? '') ?>">
                             <button class="btn btn-light w-100 text-start chon-gv-item p-2 border" 
-                                    data-gv-id="<?= $gv['id'] ?>"
+                                    data-gv-id="<?= e($gv['id']) ?>"
                                     data-gv-ten="<?= htmlspecialchars($gv['ho_ten']) ?>"
                                     style="transition: all 0.2s;">
                                 <i class="bi bi-person me-2"></i>
@@ -756,7 +756,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 // Update UI
-                selectedText.innerHTML = text || '<span class="text-muted">-- Chọn giảng viên --</span>';
+                selectedText.textContent = text || '-- Chọn giảng viên --';
                 
                 // Remove selected class from all options
                 options.forEach(opt => opt.classList.remove('selected'));
@@ -830,7 +830,7 @@ function saveGiangVienCham(dangKyId, giangVienId, sinhVienTen, tenGV) {
 
                 <div id="alertContainer"></div>
 
-                <form method="POST" action="xu_ly_tao_nguoi_dung.php" id="createUserForm">
+                <form method="POST" action="xu_ly_tao_nguoi_dung.php" id="createUserForm"><?= csrf_field() ?>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Vai trò <span class="text-danger">*</span></label>

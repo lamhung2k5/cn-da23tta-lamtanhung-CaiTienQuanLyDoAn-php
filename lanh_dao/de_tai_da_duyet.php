@@ -193,14 +193,14 @@ include_once __DIR__ . '/../includes/header.php';
                                 <a class="nav-link <?= $loaiDeTai === 'co_so_nganh' ? 'active' : '' ?>" 
                                    href="?loai=co_so_nganh">
                                     <i class="bi bi-journal-code"></i> Cơ sở ngành
-                                    <span class="badge bg-<?= $loaiDeTai === 'co_so_nganh' ? 'primary' : 'secondary' ?> ms-1"><?= $tongCSN ?></span>
+                                    <span class="badge bg-<?= $loaiDeTai === 'co_so_nganh' ? 'primary' : 'secondary' ?> ms-1"><?= e($tongCSN) ?></span>
                                 </a>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <a class="nav-link <?= $loaiDeTai === 'chuyen_nganh' ? 'active' : '' ?>" 
                                    href="?loai=chuyen_nganh">
                                     <i class="bi bi-mortarboard"></i> Chuyên ngành
-                                    <span class="badge bg-<?= $loaiDeTai === 'chuyen_nganh' ? 'success' : 'secondary' ?> ms-1"><?= $tongCN ?></span>
+                                    <span class="badge bg-<?= $loaiDeTai === 'chuyen_nganh' ? 'success' : 'secondary' ?> ms-1"><?= e($tongCN) ?></span>
                                 </a>
                             </li>
                         </ul>
@@ -220,14 +220,14 @@ include_once __DIR__ . '/../includes/header.php';
                                 <a class="nav-link <?= $loaiDeTai === 'co_so_nganh' ? 'active' : '' ?>" 
                                    href="?loai=co_so_nganh<?= $filterGiangVien > 0 ? '&giang_vien=' . $filterGiangVien : '' ?>">
                                     <i class="bi bi-journal-code"></i> Cơ sở ngành
-                                    <span class="badge bg-<?= $loaiDeTai === 'co_so_nganh' ? 'primary' : 'secondary' ?> ms-1"><?= $tongCSN ?></span>
+                                    <span class="badge bg-<?= $loaiDeTai === 'co_so_nganh' ? 'primary' : 'secondary' ?> ms-1"><?= e($tongCSN) ?></span>
                                 </a>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <a class="nav-link <?= $loaiDeTai === 'chuyen_nganh' ? 'active' : '' ?>" 
                                    href="?loai=chuyen_nganh<?= $filterGiangVien > 0 ? '&giang_vien=' . $filterGiangVien : '' ?>">
                                     <i class="bi bi-mortarboard"></i> Chuyên ngành
-                                    <span class="badge bg-<?= $loaiDeTai === 'chuyen_nganh' ? 'success' : 'secondary' ?> ms-1"><?= $tongCN ?></span>
+                                    <span class="badge bg-<?= $loaiDeTai === 'chuyen_nganh' ? 'success' : 'secondary' ?> ms-1"><?= e($tongCN) ?></span>
                                 </a>
                             </li>
                         </ul>
@@ -253,11 +253,11 @@ include_once __DIR__ . '/../includes/header.php';
                                             <td><?= htmlspecialchars($gv['ma']) ?></td>
                                             <td><?= htmlspecialchars($gv['ten']) ?></td>
                                             <td class="text-center">
-                                                <span class="text-dark fs-4 px-4 py-3"><?= $gv['so_luong'] ?> </span>
+                                                <span class="text-dark fs-4 px-4 py-3"><?= e($gv['so_luong']) ?> </span>
                                             </td>
                                             <td class="text-center">
                                                 <button type="button" class="btn btn-info btn-sm" style="width: 55px;"
-                                                        onclick="xemDanhSachDeTai(<?= $gv['id'] ?>)"><i class="bi bi-eye"></i>
+                                                        onclick="xemDanhSachDeTai(<?= e($gv['id']) ?>)"><i class="bi bi-eye"></i>
                                                 </button>
                                             </td>
                                         </tr>
@@ -334,12 +334,12 @@ include_once __DIR__ . '/../includes/header.php';
                     Từ chối đề tài
                 </h5>
             </div>
-            <form id="tuChoiForm" method="POST" action="xu_ly_duyet.php">
+            <form id="tuChoiForm" method="POST" action="xu_ly_duyet.php"><?= csrf_field() ?>
                 <div class="modal-body p-4">
                     <input type="hidden" name="action" value="tu_choi">
                     <input type="hidden" name="de_tai_id" id="tuChoiDeTaiId">
                     <input type="hidden" name="loai" id="tuChoiLoai">
-                    <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirectParam) ?>">
+                    <input type="hidden" name="redirect" value="<?= e($redirectParam ?? '') ?>">
                     <input type="hidden" name="gv_id" value="<?= isset($_GET['gv_id']) ? (int)$_GET['gv_id'] : '' ?>">
                     
                     <div class="alert alert-light border mb-4 p-3">
@@ -362,9 +362,9 @@ include_once __DIR__ . '/../includes/header.php';
 </div>
 
 <script>
-const deTaiData = <?= json_encode(array_values($deTaiLanhDaoDuyet)) ?>;
-const deTaiDataFull = <?= json_encode(array_values($deTaiLanhDaoDuyetFull)) ?>;
-const loaiDeTaiHienTai = '<?= $loaiDeTai ?>';
+const deTaiData = <?= js(array_values($deTaiLanhDaoDuyet)) ?>;
+const deTaiDataFull = <?= js(array_values($deTaiLanhDaoDuyetFull)) ?>;
+const loaiDeTaiHienTai = '<?= e($loaiDeTai) ?>';
 let currentDeTaiId = null;
 let currentGiangVienId = null;
 
@@ -493,7 +493,7 @@ function showToast(type, message) {
     const toast = document.createElement('div');
     toast.className = `alert alert-${type} position-fixed top-0 start-50 translate-middle-x mt-3`;
     toast.style.zIndex = '9999';
-    toast.innerHTML = message;
+    toast.textContent = message;
     document.body.appendChild(toast);
     
     setTimeout(() => {
@@ -528,7 +528,7 @@ function handleTuChoiChange(deTaiId) {
         modal.show();
         
         // Focus vào textarea sau khi modal hiển thị
-        document.getElementById('tuChoiModal').addEventListener('shown.bs.modal', function () {
+        document.getElementById('tuChoiModal')?.addEventListener('shown.bs.modal', function () {
             document.getElementById('lyDoTuChoi').focus();
         }, { once: true });
         
@@ -568,14 +568,14 @@ function xuLyHangLoat() {
         // Chuyển hướng với danh sách ID
         const ids = duyetList.map(dt => dt.id).join(',');
         const loai = new URLSearchParams(window.location.search).get('loai') || 'co_so_nganh';
-        window.location.href = `xu_ly_duyet.php?action=duyet_hang_loat&ids=${ids}&loai=${loai}`;
+        secureNavigate(`xu_ly_duyet.php?action=duyet_hang_loat&ids=${ids}&loai=${loai}`);
     }
 }
 
 let currentTuChoiList = [];
 
 // Đánh dấu khi form từ chối được submit
-document.getElementById('tuChoiForm').addEventListener('submit', function() {
+document.getElementById('tuChoiForm')?.addEventListener('submit', function() {
     document.getElementById('tuChoiModal').submitted = true;
 });
 
@@ -853,14 +853,14 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-document.getElementById('btnDuyetModal').addEventListener('click', function() {
+document.getElementById('btnDuyetModal')?.addEventListener('click', function() {
     if (currentDeTaiId && confirm('Bạn có chắc muốn duyệt đề tài này?')) {
         const loai = new URLSearchParams(window.location.search).get('loai') || 'co_so_nganh';
-        window.location.href = 'xu_ly_duyet.php?action=duyet&id=' + currentDeTaiId + '&loai=' + loai;
+        secureNavigate('xu_ly_duyet.php?action=duyet&id=' + currentDeTaiId + '&loai=' + loai);
     }
 });
 
-document.getElementById('btnTuChoiModal').addEventListener('click', function() {
+document.getElementById('btnTuChoiModal')?.addEventListener('click', function() {
     if (currentDeTaiId) {
         tuChoiDeTai(currentDeTaiId);
     }
@@ -869,7 +869,7 @@ document.getElementById('btnTuChoiModal').addEventListener('click', function() {
 function duyetDeTai(deTaiId) {
     if (confirm('Bạn có chắc muốn duyệt đề tài này?')) {
         const loai = new URLSearchParams(window.location.search).get('loai') || 'co_so_nganh';
-        window.location.href = 'xu_ly_duyet.php?action=duyet&id=' + deTaiId + '&loai=' + loai;
+        secureNavigate('xu_ly_duyet.php?action=duyet&id=' + deTaiId + '&loai=' + loai);
     }
 }
 
@@ -879,7 +879,7 @@ function duyetNhanh(deTaiId) {
     
     if (confirm(`Duyệt đề tài: "${deTai.tieu_de}"?`)) {
         const loai = new URLSearchParams(window.location.search).get('loai') || 'co_so_nganh';
-        window.location.href = 'xu_ly_duyet.php?action=duyet&id=' + deTaiId + '&loai=' + loai;
+        secureNavigate('xu_ly_duyet.php?action=duyet&id=' + deTaiId + '&loai=' + loai);
     }
 }
 
@@ -903,7 +903,7 @@ function tuChoiDeTai(deTaiId) {
     modal.show();
     
     // Focus vào textarea sau khi modal hiển thị
-    document.getElementById('tuChoiModal').addEventListener('shown.bs.modal', function () {
+    document.getElementById('tuChoiModal')?.addEventListener('shown.bs.modal', function () {
         document.getElementById('lyDoTuChoi').focus();
     }, { once: true });
 }
@@ -1006,7 +1006,7 @@ function chuyenTabNhanh() {
     const loaiMoi = loaiHienTai === 'co_so_nganh' ? 'chuyen_nganh' : 'co_so_nganh';
     
     // Chuyển hướng với giảng viên được giữ nguyên
-    window.location.href = `?loai=${loaiMoi}&giang_vien=${currentGiangVienId}`;
+    secureNavigate(`?loai=${loaiMoi}&giang_vien=${currentGiangVienId}`);
 }
 </script>
 
@@ -1033,7 +1033,7 @@ function chuyenTabNhanh() {
 
                 <div id="alertContainer"></div>
 
-                <form method="POST" action="xu_ly_tao_nguoi_dung.php" id="createUserForm">
+                <form method="POST" action="xu_ly_tao_nguoi_dung.php" id="createUserForm"><?= csrf_field() ?>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Vai trò <span class="text-danger">*</span></label>
@@ -1240,7 +1240,7 @@ function chuyenTabNhanh() {
 </style>
 
 <script>
-document.getElementById('vaiTroModal').addEventListener('change', function() {
+document.getElementById('vaiTroModal')?.addEventListener('change', function() {
     const selectedRole = this.value;
     
     document.querySelectorAll('.additional-fields-modal').forEach(el => {

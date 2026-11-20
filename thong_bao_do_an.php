@@ -104,8 +104,10 @@ function getCountdownInfo($ngay, $thang, $nam)
 <html lang="vi">
 
 <head>
+<meta name="csrf-token" content="<?= e(generateCSRF()) ?>">
+<script src="<?= e(BASE_URL) ?>assets/js/security.js"></script>
     <meta charset="UTF-8">
-    <title><?= $pageTitle ?> - Hệ Thống Quản Lý Đề Tài</title>
+    <title><?= e($pageTitle) ?> - Hệ Thống Quản Lý Đề Tài</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Bootstrap CSS -->
@@ -1001,7 +1003,7 @@ function getCountdownInfo($ngay, $thang, $nam)
                                         class="bi bi-journal-text me-2"></i>Danh sách đề tài</a></li>
                             <?php $menuLinks = getMenuLinks(); ?>
                             <?php if (!empty($menuLinks['ket_qua_thi'])): ?>
-                                <li><a class="dropdown-item" href="<?= $menuLinks['ket_qua_thi'] ?>" target="_blank"><i
+                                <li><a class="dropdown-item" href="<?= e($menuLinks['ket_qua_thi']) ?>" target="_blank"><i
                                             class="bi bi-file-earmark-text me-2"></i>Kết quả thi</a></li>
                             <?php endif; ?>
                         </ul>
@@ -1063,7 +1065,7 @@ function getCountdownInfo($ngay, $thang, $nam)
                         <div id="edit-form-page" class="edit-form"
                             style="text-align: left; max-width: 600px; margin: 20px auto;">
                             <h5 class="mb-3">Sửa thông tin trang</h5>
-                            <form method="POST">
+                            <form method="POST"><?= csrf_field() ?>
                                 <input type="hidden" name="action" value="save_page">
                                 <div class="mb-2">
                                     <label class="form-label">Tiêu đề</label>
@@ -1143,23 +1145,23 @@ function getCountdownInfo($ngay, $thang, $nam)
                                         <div class="timeline-item">
                                             <?php if ($isLanhDao): ?>
                                                 <button class="btn btn-primary btn-sm edit-btn"
-                                                    onclick="toggleEditForm('timeline-<?php echo $item['id']; ?>')">
+                                                    onclick="toggleEditForm('timeline-<?php echo e($item['id']); ?>')">
                                                     <i class="bi bi-pencil"></i>
                                                 </button>
-                                                <div id="edit-form-timeline-<?php echo $item['id']; ?>" class="edit-form">
+                                                <div id="edit-form-timeline-<?php echo e($item['id']); ?>" class="edit-form">
                                                     <h6>Sửa mốc: <?php echo htmlspecialchars($item['tieu_de']); ?></h6>
-                                                    <form method="POST">
+                                                    <form method="POST"><?= csrf_field() ?>
                                                         <input type="hidden" name="action" value="save_timeline">
-                                                        <input type="hidden" name="id" value="<?php echo $item['id']; ?>">
+                                                        <input type="hidden" name="id" value="<?php echo e($item['id']); ?>">
                                                         <div class="row">
                                                             <div class="col-md-2"><input type="number" name="ngay" class="form-control"
-                                                                    value="<?php echo $item['ngay']; ?>" placeholder="Ngày"></div>
+                                                                    value="<?php echo e($item['ngay']); ?>" placeholder="Ngày"></div>
                                                             <div class="col-md-2"><input type="number" name="thang" class="form-control"
-                                                                    value="<?php echo $item['thang']; ?>" placeholder="Tháng"></div>
+                                                                    value="<?php echo e($item['thang']); ?>" placeholder="Tháng"></div>
                                                             <div class="col-md-3"><input type="number" name="nam" class="form-control"
-                                                                    value="<?php echo $item['nam']; ?>" placeholder="Năm"></div>
+                                                                    value="<?php echo e($item['nam']); ?>" placeholder="Năm"></div>
                                                             <div class="col-md-2"><input type="number" name="thu_tu"
-                                                                    class="form-control" value="<?php echo $item['thu_tu']; ?>"
+                                                                    class="form-control" value="<?php echo e($item['thu_tu']); ?>"
                                                                     placeholder="Thứ tự"></div>
                                                             <div class="col-md-3"><select name="trang_thai" class="form-control">
                                                                     <option value="mo" <?php echo $item['trang_thai'] === 'mo' ? 'selected' : ''; ?>>Hiện</option>
@@ -1173,17 +1175,17 @@ function getCountdownInfo($ngay, $thang, $nam)
                                                             placeholder="Nội dung"><?php echo htmlspecialchars($item['noi_dung']); ?></textarea>
                                                         <textarea name="yeu_cau" class="form-control"
                                                             placeholder="Yêu cầu (mỗi dòng một)"><?php echo htmlspecialchars(str_replace('|', "\n", $item['yeu_cau'])); ?></textarea>
-                                                        <input type="hidden" name="loai" value="<?php echo $item['loai']; ?>">
+                                                        <input type="hidden" name="loai" value="<?php echo e($item['loai']); ?>">
                                                         <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check"></i>
                                                             Lưu</button>
                                                         <button type="button" class="btn btn-secondary btn-sm"
-                                                            onclick="toggleEditForm('timeline-<?php echo $item['id']; ?>')">Hủy</button>
+                                                            onclick="toggleEditForm('timeline-<?php echo e($item['id']); ?>')">Hủy</button>
                                                     </form>
                                                 </div>
                                             <?php endif; ?>
                                             <div class="timeline-date">
-                                                <span class="day"><?php echo $item['ngay']; ?></span>
-                                                <span class="month">Tháng <?php echo $item['thang']; ?></span>
+                                                <span class="day"><?php echo e($item['ngay']); ?></span>
+                                                <span class="month">Tháng <?php echo e($item['thang']); ?></span>
                                             </div>
                                             <div class="timeline-content">
                                                 <h4><?php echo htmlspecialchars($item['tieu_de']); ?></h4>
@@ -1191,10 +1193,10 @@ function getCountdownInfo($ngay, $thang, $nam)
                                                 <?php
                                                 $countdown = getCountdownInfo($item['ngay'], $item['thang'], $item['nam']);
                                                 ?>
-                                                <div class="countdown-badge <?php echo $countdown['class']; ?> mb-2"
+                                                <div class="countdown-badge <?php echo e($countdown['class']); ?> mb-2"
                                                     style="display: inline-flex;">
                                                     <i class="bi bi-clock-history countdown-icon"></i>
-                                                    <?php echo $countdown['text']; ?>
+                                                    <?php echo e($countdown['text']); ?>
                                                 </div>
                                                 <?php if ($item['yeu_cau']): ?>
                                                     <div class="requirements">
@@ -1227,23 +1229,23 @@ function getCountdownInfo($ngay, $thang, $nam)
                                         <div class="timeline-item">
                                             <?php if ($isLanhDao): ?>
                                                 <button class="btn btn-success btn-sm edit-btn"
-                                                    onclick="toggleEditForm('timeline-<?php echo $item['id']; ?>')">
+                                                    onclick="toggleEditForm('timeline-<?php echo e($item['id']); ?>')">
                                                     <i class="bi bi-pencil"></i>
                                                 </button>
-                                                <div id="edit-form-timeline-<?php echo $item['id']; ?>" class="edit-form">
+                                                <div id="edit-form-timeline-<?php echo e($item['id']); ?>" class="edit-form">
                                                     <h6>Sửa mốc: <?php echo htmlspecialchars($item['tieu_de']); ?></h6>
-                                                    <form method="POST">
+                                                    <form method="POST"><?= csrf_field() ?>
                                                         <input type="hidden" name="action" value="save_timeline">
-                                                        <input type="hidden" name="id" value="<?php echo $item['id']; ?>">
+                                                        <input type="hidden" name="id" value="<?php echo e($item['id']); ?>">
                                                         <div class="row">
                                                             <div class="col-md-2"><input type="number" name="ngay" class="form-control"
-                                                                    value="<?php echo $item['ngay']; ?>" placeholder="Ngày"></div>
+                                                                    value="<?php echo e($item['ngay']); ?>" placeholder="Ngày"></div>
                                                             <div class="col-md-2"><input type="number" name="thang" class="form-control"
-                                                                    value="<?php echo $item['thang']; ?>" placeholder="Tháng"></div>
+                                                                    value="<?php echo e($item['thang']); ?>" placeholder="Tháng"></div>
                                                             <div class="col-md-3"><input type="number" name="nam" class="form-control"
-                                                                    value="<?php echo $item['nam']; ?>" placeholder="Năm"></div>
+                                                                    value="<?php echo e($item['nam']); ?>" placeholder="Năm"></div>
                                                             <div class="col-md-2"><input type="number" name="thu_tu"
-                                                                    class="form-control" value="<?php echo $item['thu_tu']; ?>"
+                                                                    class="form-control" value="<?php echo e($item['thu_tu']); ?>"
                                                                     placeholder="Thứ tự"></div>
                                                             <div class="col-md-3"><select name="trang_thai" class="form-control">
                                                                     <option value="mo" <?php echo $item['trang_thai'] === 'mo' ? 'selected' : ''; ?>>Hiện</option>
@@ -1257,17 +1259,17 @@ function getCountdownInfo($ngay, $thang, $nam)
                                                             placeholder="Nội dung"><?php echo htmlspecialchars($item['noi_dung']); ?></textarea>
                                                         <textarea name="yeu_cau" class="form-control"
                                                             placeholder="Yêu cầu (mỗi dòng một)"><?php echo htmlspecialchars(str_replace('|', "\n", $item['yeu_cau'])); ?></textarea>
-                                                        <input type="hidden" name="loai" value="<?php echo $item['loai']; ?>">
+                                                        <input type="hidden" name="loai" value="<?php echo e($item['loai']); ?>">
                                                         <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check"></i>
                                                             Lưu</button>
                                                         <button type="button" class="btn btn-secondary btn-sm"
-                                                            onclick="toggleEditForm('timeline-<?php echo $item['id']; ?>')">Hủy</button>
+                                                            onclick="toggleEditForm('timeline-<?php echo e($item['id']); ?>')">Hủy</button>
                                                     </form>
                                                 </div>
                                             <?php endif; ?>
                                             <div class="timeline-date">
-                                                <span class="day"><?php echo $item['ngay']; ?></span>
-                                                <span class="month">Tháng <?php echo $item['thang']; ?></span>
+                                                <span class="day"><?php echo e($item['ngay']); ?></span>
+                                                <span class="month">Tháng <?php echo e($item['thang']); ?></span>
                                             </div>
                                             <div class="timeline-content">
                                                 <h4><?php echo htmlspecialchars($item['tieu_de']); ?></h4>
@@ -1275,10 +1277,10 @@ function getCountdownInfo($ngay, $thang, $nam)
                                                 <?php
                                                 $countdown = getCountdownInfo($item['ngay'], $item['thang'], $item['nam']);
                                                 ?>
-                                                <div class="countdown-badge <?php echo $countdown['class']; ?> mb-2"
+                                                <div class="countdown-badge <?php echo e($countdown['class']); ?> mb-2"
                                                     style="display: inline-flex;">
                                                     <i class="bi bi-clock-history countdown-icon"></i>
-                                                    <?php echo $countdown['text']; ?>
+                                                    <?php echo e($countdown['text']); ?>
                                                 </div>
                                                 <?php if ($item['yeu_cau']): ?>
                                                     <div class="requirements">
@@ -1310,7 +1312,7 @@ function getCountdownInfo($ngay, $thang, $nam)
                                 <div id="edit-form-notice" class="edit-form"
                                     style="background: rgba(255,255,255,0.95); text-align: left;">
                                     <h6>Sửa lưu ý</h6>
-                                    <form method="POST">
+                                    <form method="POST"><?= csrf_field() ?>
                                         <input type="hidden" name="action" value="save_notice">
                                         <input type="text" name="tieu_de" class="form-control"
                                             value="<?php echo htmlspecialchars($notice['tieu_de']); ?>" placeholder="Tiêu đề">

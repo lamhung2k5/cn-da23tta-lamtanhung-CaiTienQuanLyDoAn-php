@@ -19,7 +19,7 @@ $isLoggedIn = isLoggedIn();
             <div class="col-md-8">
                 <div class="footer-title mb-3">
                     <h4 style="font-weight: 700; color: #000; margin-bottom: 0.5rem;">
-                        Khoa Công nghệ thông tin - Đại học Trà Vinh © <?= $currentYear ?>
+                        Khoa Công nghệ thông tin - Đại học Trà Vinh © <?= e($currentYear) ?>
                     </h4>
                     <p class="footer-subtitle text-muted mb-0" style="font-size: 0.9rem;">
                         Faculty of Information Technology - Tra Vinh University

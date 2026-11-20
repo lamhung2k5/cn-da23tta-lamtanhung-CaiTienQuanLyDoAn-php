@@ -38,7 +38,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($currentUserInfo['ma_vai_tro'] === 'giang_vien' && $currentUserInfo['profile']) {
                     $giangVienModel = new GiangVienModel();
                     $profileData = [
-                        'ma_giang_vien' => trim($_POST['ma_giang_vien'] ?? ''),
                         'khoa' => trim($_POST['khoa'] ?? ''),
                         'chuyen_mon' => trim($_POST['chuyen_mon'] ?? ''),
                         'so_dien_thoai' => $so_dien_thoai
@@ -83,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     } catch (Exception $e) {
-        $error = 'Lỗi hệ thống: ' . $e->getMessage();
+        $error = 'Lỗi hệ thống: ' . safeError($e);
     }
 }
 
@@ -248,19 +247,19 @@ body {
         
         <?php if ($error): ?>
             <div class="alert alert-danger alert-dismissible fade show">
-                <i class="bi bi-exclamation-circle"></i> <?= $error ?>
+                <i class="bi bi-exclamation-circle"></i> <?= e($error) ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
 
         <?php if ($success): ?>
             <div class="alert alert-success alert-dismissible fade show">
-                <i class="bi bi-check-circle"></i> <?= $success ?>
+                <i class="bi bi-check-circle"></i> <?= e($success) ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
         
-        <form method="POST" action="?mode=<?= htmlspecialchars($_GET['mode'] ?? $currentRole) ?>">
+        <form method="POST" action="?mode=<?= htmlspecialchars($_GET['mode'] ?? $currentRole) ?>"><?= csrf_field() ?>
             <!-- Thông tin chung -->
             <div class="section-title">Thông tin chung</div>
             
@@ -363,7 +362,7 @@ body {
             
             <!-- Action Buttons -->
             <div class="mt-4 d-flex justify-content-end gap-2">
-                <a href="profile.php?mode=<?= $currentRole ?>" class="btn" style="background-color: #ff0000ff; color: white; border: none; text-decoration: none;">
+                <a href="profile.php?mode=<?= e($currentRole) ?>" class="btn" style="background-color: #ff0000ff; color: white; border: none; text-decoration: none;">
                   <i class="bi bi-chevron-double-left"></i> Quay lại
                 </a>
                 <button type="submit" class="btn" style="background-color: #0d6efd; color: white; border: none;">

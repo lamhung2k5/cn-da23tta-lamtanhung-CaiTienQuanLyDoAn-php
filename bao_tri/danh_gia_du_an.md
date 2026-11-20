@@ -1,5 +1,7 @@
 # Đánh giá dự án: Kiến trúc MVC, giao diện và bảo mật
 
+> Đây là đánh giá ban đầu trước đợt vá. Phạm vi xác thực đã được xác nhận lại: chỉ tài khoản trường cấp, Lãnh đạo quản lý tài khoản, không mở đăng ký/OAuth/OTP. Kết quả hiện tại và việc còn lại xem [báo cáo bảo mật](../bao_cao/tien_do/05_ban_giao_bao_mat.md).
+
 > Phạm vi: khoảng 110 file PHP (không tính `vendor/`). Kết quả lấy từ việc quét tự động toàn bộ code và đọc kỹ một số file tiêu biểu.
 
 ---

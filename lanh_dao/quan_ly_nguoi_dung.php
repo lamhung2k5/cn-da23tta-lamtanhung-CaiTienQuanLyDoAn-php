@@ -89,21 +89,21 @@ include_once __DIR__ . '/../includes/header.php';
             <!-- Flash Messages -->
             <?php if ($success): ?>
                 <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-                    <i class="bi bi-check-circle-fill me-2"></i> <?= $success ?>
+                    <i class="bi bi-check-circle-fill me-2"></i> <?= e($success) ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
 
             <?php if ($error): ?>
                 <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i> <?= $error ?>
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> <?= e($error) ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
 
             <?php if ($warning): ?>
                 <div class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert">
-                    <i class="bi bi-exclamation-circle-fill me-2"></i> <?= $warning ?>
+                    <i class="bi bi-exclamation-circle-fill me-2"></i> <?= e($warning) ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
@@ -115,7 +115,7 @@ include_once __DIR__ . '/../includes/header.php';
                         <div class="card-body p-3 d-flex justify-content-between align-items-center">
                             <div>
                                 <div class="small fw-semibold text-dark text-opacity-75">TỔNG TÀI KHOẢN</div>
-                                <div class="fs-3 fw-bold text-dark"><?= $tongTaiKhoan ?></div>
+                                <div class="fs-3 fw-bold text-dark"><?= e($tongTaiKhoan) ?></div>
                             </div>
                             <i class="bi bi-people fs-1 text-dark opacity-50"></i>
                         </div>
@@ -126,7 +126,7 @@ include_once __DIR__ . '/../includes/header.php';
                         <div class="card-body p-3 d-flex justify-content-between align-items-center">
                             <div>
                                 <div class="small fw-semibold text-dark text-opacity-75">LÃNH ĐẠO</div>
-                                <div class="fs-3 fw-bold text-dark"><?= $tongLanhDao ?></div>
+                                <div class="fs-3 fw-bold text-dark"><?= e($tongLanhDao) ?></div>
                             </div>
                             <i class="bi bi-person-workspace fs-1 text-dark opacity-50"></i>
                         </div>
@@ -137,7 +137,7 @@ include_once __DIR__ . '/../includes/header.php';
                         <div class="card-body p-3 d-flex justify-content-between align-items-center">
                             <div>
                                 <div class="small fw-semibold text-dark text-opacity-75">GIẢNG VIÊN</div>
-                                <div class="fs-3 fw-bold text-dark"><?= $tongGiangVien ?></div>
+                                <div class="fs-3 fw-bold text-dark"><?= e($tongGiangVien) ?></div>
                             </div>
                             <i class="bi bi-person-badge fs-1 text-dark opacity-50"></i>
                         </div>
@@ -148,7 +148,7 @@ include_once __DIR__ . '/../includes/header.php';
                         <div class="card-body p-3 d-flex justify-content-between align-items-center">
                             <div>
                                 <div class="small fw-semibold text-dark text-opacity-75">SINH VIÊN</div>
-                                <div class="fs-3 fw-bold text-dark"><?= $tongSinhVien ?></div>
+                                <div class="fs-3 fw-bold text-dark"><?= e($tongSinhVien) ?></div>
                             </div>
                             <i class="bi bi-mortarboard fs-1 text-dark opacity-50"></i>
                         </div>
@@ -156,6 +156,7 @@ include_once __DIR__ . '/../includes/header.php';
                 </div>
             </div>
 
+            <?php include __DIR__ . '/includes/account_security_form.php'; ?>
             <!-- Card Quản lý tài khoản (Tabs & Content) -->
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white border-bottom">
@@ -184,14 +185,14 @@ include_once __DIR__ . '/../includes/header.php';
                                 <!-- Filter theo vai trò -->
                                 <div class="btn-group btn-group-sm" role="group" id="roleFilterGroup">
                                     <button type="button" class="btn btn-outline-dark active" data-role="all">Tất cả
-                                        (<?= $tongTaiKhoan ?>)</button>
+                                        (<?= e($tongTaiKhoan) ?>)</button>
                                     <button type="button" class="btn btn-outline-warning text-dark"
                                         data-role="lanh_dao">Lãnh
-                                        đạo (<?= $tongLanhDao ?>)</button>
+                                        đạo (<?= e($tongLanhDao) ?>)</button>
                                     <button type="button" class="btn btn-outline-info" data-role="giang_vien">Giảng viên
-                                        (<?= $tongGiangVien ?>)</button>
+                                        (<?= e($tongGiangVien) ?>)</button>
                                     <button type="button" class="btn btn-outline-success" data-role="sinh_vien">Sinh
-                                        viên (<?= $tongSinhVien ?>)</button>
+                                        viên (<?= e($tongSinhVien) ?>)</button>
                                 </div>
 
                                 <!-- Tìm kiếm -->
@@ -233,7 +234,7 @@ include_once __DIR__ . '/../includes/header.php';
                                                 <?php 
                                                     $mssv = ($u['ma_vai_tro'] === ROLE_SINH_VIEN) ? ($u['ma_sinh_vien'] ?? '') : '';
                                                 ?>
-                                                <tr class="user-row" data-role="<?= $u['ma_vai_tro'] ?>"
+                                                <tr class="user-row" data-role="<?= e($u['ma_vai_tro']) ?>"
                                                     data-search="<?= strtolower(htmlspecialchars($u['ho_ten'] . ' ' . $u['email'] . ' ' . $mssv)) ?>">
                                                     <td class="text-center fw-bold text-muted"><?= $index + 1 ?></td>
                                                     <td>
@@ -279,7 +280,7 @@ include_once __DIR__ . '/../includes/header.php';
                         <!-- TAB 2: TẠO TÀI KHOẢN MỚI -->
                         <div class="tab-pane fade" id="content-tao-moi" role="tabpanel">
                             <div class="p-4" style="max-width: 800px; margin: 0 auto;">
-                                <form method="POST" action="xu_ly_tao_nguoi_dung.php" id="formTaoNguoiDung">
+                                <form method="POST" action="xu_ly_tao_nguoi_dung.php" id="formTaoNguoiDung"><?= csrf_field() ?><div class="mb-3"><label class="form-label">Mật khẩu hiện tại của Lãnh đạo (bắt buộc khi cấp thêm Lãnh đạo)</label><input class="form-control" type="password" name="current_password" autocomplete="current-password"></div>
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label class="form-label fw-semibold">Vai trò <span

@@ -36,9 +36,10 @@ $sql = "SELECT dt.*,
         FROM de_tai dt
         JOIN giang_vien gv ON dt.giang_vien_id = gv.id
         JOIN nguoi_dung nd ON gv.nguoi_dung_id = nd.id
-        WHERE dt.id = :id";
+        WHERE dt.id = :id AND (dt.trang_thai='da_duyet' OR EXISTS (
+            SELECT 1 FROM dang_ky_de_tai dk WHERE dk.de_tai_id=dt.id AND dk.sinh_vien_id=:student_id))";
 
-$deTai = $deTaiModel->queryOne($sql, ['id' => $deTaiId]);
+$deTai = $deTaiModel->queryOne($sql, ['id' => $deTaiId, 'student_id' => $sinhVien['id']]);
 
 if (!$deTai) {
     setFlashMessage('error', 'Đề tài không tồn tại');
@@ -301,7 +302,7 @@ include_once __DIR__ . '/../includes/header.php';
         <div class="col-md-10 p-4">
             <!-- Nút quay lại - phía trên bên trái -->
             <div class="mb-3">
-                <a href="danh_sach_de_tai.php?loai=<?= $deTai['he_dao_tao'] ?>" class="btn-back-bottom">
+                <a href="danh_sach_de_tai.php?loai=<?= e($deTai['he_dao_tao']) ?>" class="btn-back-bottom">
                     <i class="bi bi-chevron-double-left"></i> Quay lại
                 </a>
             </div>
@@ -338,7 +339,7 @@ include_once __DIR__ . '/../includes/header.php';
                                     <div>
                                         <span class="info-label">Số lượng sinh viên:</span>
                                         <div class="info-value">
-                                            Còn <strong><?= $deTai['con_lai'] ?></strong> / <?= $deTai['so_luong_sv'] ?> chỗ
+                                            Còn <strong><?= e($deTai['con_lai']) ?></strong> / <?= e($deTai['so_luong_sv']) ?> chỗ
                                         </div>
                                     </div>
                                 </div>
@@ -457,13 +458,13 @@ include_once __DIR__ . '/../includes/header.php';
                                         <div class="d-flex align-items-center">
                                             <i class="bi bi-lock-fill text-warning me-3" style="font-size: 2rem;"></i>
                                             <div>
-                                                <h5 class="mb-0"><?= $lyDo ?></h5>
+                                                <h5 class="mb-0"><?= e($lyDo) ?></h5>
                                             </div>
                                         </div>
                                     </div>
                                 <?php elseif ($deTai['con_lai'] > 0): ?>
                                     <div class="text-end">
-                                        <a href="dang_ky_de_tai.php?id=<?= $deTai['id'] ?>" 
+                                        <a href="dang_ky_de_tai.php?id=<?= e($deTai['id']) ?>"
                                            class="btn-register"
                                            onclick="return confirm('Bạn có chắc muốn đăng ký đề tài này?')">
                                             <i class="bi bi-bookmark-plus-fill"></i> Đăng ký đề tài này

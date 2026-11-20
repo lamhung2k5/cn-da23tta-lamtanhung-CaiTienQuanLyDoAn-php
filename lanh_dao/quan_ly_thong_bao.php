@@ -1182,11 +1182,11 @@ include_once __DIR__ . '/../includes/header.php';
                 <?php else: ?>
                     <?php foreach ($dsThongBao as $thongBao): ?>
                         <div
-                            class="notification-item type-<?= $thongBao['loai'] ?> <?= $thongBao['trang_thai'] === 'khoa' ? 'inactive' : '' ?>">
+                            class="notification-item type-<?= e($thongBao['loai']) ?> <?= $thongBao['trang_thai'] === 'khoa' ? 'inactive' : '' ?>">
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <div class="d-flex gap-2">
                                     <span class="text-muted small me-1">Loại thông báo:</span>
-                                    <span class="type-badge type-<?= $thongBao['loai'] ?>">
+                                    <span class="type-badge type-<?= e($thongBao['loai']) ?>">
                                         <?php
                                         $typeLabels = [
                                             'info' => 'Thông tin',
@@ -1200,29 +1200,29 @@ include_once __DIR__ . '/../includes/header.php';
 
                                 </div>
                                 <div class="notification-actions">
-                                    <form method="POST" class="d-inline">
+                                    <form method="POST" class="d-inline"><?= csrf_field() ?>
                                         <input type="hidden" name="action" value="toggle_status">
-                                        <input type="hidden" name="id" value="<?= $thongBao['id'] ?>">
+                                        <input type="hidden" name="id" value="<?= e($thongBao['id']) ?>">
                                         <button type="submit" class="btn-toggle-timeline"
                                             title="<?= $thongBao['trang_thai'] === 'mo' ? 'Ẩn thông báo' : 'Hiển thị thông báo' ?>">
                                             <i class="bi bi-<?= $thongBao['trang_thai'] === 'mo' ? 'eye-slash' : 'eye' ?>"></i>
                                         </button>
                                     </form>
                                     <button class="btn-edit-timeline" data-bs-toggle="modal"
-                                        data-bs-target="#editNotificationModal" data-id="<?= $thongBao['id'] ?>"
+                                        data-bs-target="#editNotificationModal" data-id="<?= e($thongBao['id']) ?>"
                                         data-tieu_de="<?= htmlspecialchars($thongBao['tieu_de']) ?>"
                                         data-noi_dung="<?= htmlspecialchars($thongBao['noi_dung']) ?>"
-                                        data-loai="<?= $thongBao['loai'] ?>"
+                                        data-loai="<?= e($thongBao['loai']) ?>"
                                         data-link="<?= htmlspecialchars($thongBao['link']) ?>"
-                                        data-ngay_bat_dau="<?= $thongBao['ngay_bat_dau'] ?>"
-                                        data-ngay_ket_thuc="<?= $thongBao['ngay_ket_thuc'] ?>"
-                                        data-trang_thai="<?= $thongBao['trang_thai'] ?>">
+                                        data-ngay_bat_dau="<?= e($thongBao['ngay_bat_dau']) ?>"
+                                        data-ngay_ket_thuc="<?= e($thongBao['ngay_ket_thuc']) ?>"
+                                        data-trang_thai="<?= e($thongBao['trang_thai']) ?>">
                                         <i class="bi bi-pencil"></i>
                                     </button>
                                     <form method="POST" class="d-inline"
-                                        onsubmit="return confirm('Bạn có chắc muốn xóa thông báo này?')">
+                                        onsubmit="return confirm('Bạn có chắc muốn xóa thông báo này?')"><?= csrf_field() ?>
                                         <input type="hidden" name="action" value="delete">
-                                        <input type="hidden" name="id" value="<?= $thongBao['id'] ?>">
+                                        <input type="hidden" name="id" value="<?= e($thongBao['id']) ?>">
                                         <button type="submit" class="btn-delete-timeline">
                                             <i class="bi bi-trash"></i>
                                         </button>
@@ -1259,7 +1259,7 @@ include_once __DIR__ . '/../includes/header.php';
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <form method="POST">
+                <form method="POST"><?= csrf_field() ?>
                     <div class="modal-body modal-body-modern">
                         <input type="hidden" name="action" value="add">
 
@@ -1334,7 +1334,7 @@ include_once __DIR__ . '/../includes/header.php';
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <form method="POST">
+                <form method="POST"><?= csrf_field() ?>
                     <div class="modal-body modal-body-modern">
                         <input type="hidden" name="action" value="update">
                         <input type="hidden" name="id" id="edit_id">

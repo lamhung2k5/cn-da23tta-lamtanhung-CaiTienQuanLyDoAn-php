@@ -38,8 +38,8 @@ Hệ thống tối ưu hóa sự tương tác giữa **Sinh viên**, **Giảng v
 * **Cấu hình hệ thống:** Tùy chỉnh các liên kết menu, tham số hệ thống và mở/đóng đợt đăng ký.
 
 ### 🔐 4. Xác Thực & Bảo Mật (Authentication & Security)
-* Đăng nhập đa phương thức: **Tài khoản Local**, **Google OAuth 2.0**, **GitHub OAuth**, **Microsoft OAuth**.
-* Xác thực **OTP** qua Email cho các thao tác quan trọng hoặc quên mật khẩu.
+* Chỉ đăng nhập email/mật khẩu bằng tài khoản nhà trường cấp trong `nguoi_dung`; Lãnh đạo quản lý việc cấp và import tài khoản.
+* Đăng ký tự do, OAuth, OTP đăng ký và reset công khai đã đóng. Lãnh đạo hỗ trợ cấp lại mật khẩu.
 * Bảo mật hệ thống với **CSRF Token**, **Password Hashing (Bcrypt)**, chống **SQL Injection (PDO Prepared Statements)** và **XSS Clean**.
 * Tự động nhận diện môi trường (Localhost XAMPP / Hosting InfinityFree).
 
@@ -53,7 +53,7 @@ Hệ thống tối ưu hóa sự tương tác giữa **Sinh viên**, **Giảng v
 | **Database** | MySQL / MariaDB (Kết nối Singleton PDO) |
 | **Frontend** | HTML5, CSS3 Vanilla, JavaScript (ES6+), Bootstrap 5.3 |
 | **Icons & Style** | Bootstrap Icons, Google Fonts (Inter, Roboto) |
-| **OAuth Providers**| Google Identity, GitHub API, Azure AD (Microsoft) |
+| **Xác thực** | Tài khoản trường cấp, password hash, session, POST và CSRF |
 | **Server Support** | Apache (`.htaccess` Rewrite Rule) |
 
 ---
@@ -150,3 +150,6 @@ Dự án phát triển bởi **Khoa Công nghệ Thông tin - Đại học Trà 
 
 Chạy `composer install` để cài thư viện theo `composer.lock`.
 Sao chép `config/local.example.php` thành `config/local.php`, rồi điền mật khẩu SMTP và DB production nếu cần. File `config/local.php` được Git bỏ qua. Có thể đặt biến môi trường `SMTP_PASS` và `PRODUCTION_DB_PASS` thay thế; biến môi trường được ưu tiên. Kết nối DB localhost vẫn dùng cấu hình hiện tại trong `config/database.php`.
+## Bảo trì bảo mật (21/11/2026)
+
+Xem [báo cáo](bao_cao/README.md), [bàn giao](bao_cao/tien_do/05_ban_giao_bao_mat.md) và [cách chạy kiểm thử](tests/security/README.md). Sinh viên đăng ký được duyệt ngay khi thỏa giới hạn. Mật khẩu mới 8–72 byte; các mật khẩu MD5/plaintext cần Lãnh đạo cấp lại.

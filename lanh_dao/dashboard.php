@@ -279,7 +279,7 @@ include_once __DIR__ . '/../includes/header.php';
                                         <div class="accordion-item gv-accordion-item csn">
                                             <h2 class="accordion-header">
                                                 <button class="accordion-button gv-accordion-button collapsed" type="button"
-                                                    data-bs-toggle="collapse" data-bs-target="#collapseCSN<?= $gvId ?>"
+                                                    data-bs-toggle="collapse" data-bs-target="#collapseCSN<?= e($gvId) ?>"
                                                     aria-expanded="false">
                                                     <i class="bi bi-person-down me-2" style="font-size: 1.2rem;"></i>
                                                     <strong><?= htmlspecialchars($gvData['ten_giang_vien']) ?></strong>
@@ -287,7 +287,7 @@ include_once __DIR__ . '/../includes/header.php';
                                                         tài</span>
                                                 </button>
                                             </h2>
-                                            <div id="collapseCSN<?= $gvId ?>" class="accordion-collapse collapse"
+                                            <div id="collapseCSN<?= e($gvId) ?>" class="accordion-collapse collapse"
                                                 data-bs-parent="#accordionCSN">
                                                 <div class="accordion-body gv-accordion-body">
                                                     <div class="list-group list-group-flush">
@@ -305,7 +305,7 @@ include_once __DIR__ . '/../includes/header.php';
                                                                 </div>
                                                                 <button type="button" class="btn btn-info btn-sm ms-2"
                                                                     title="Xem chi tiết"
-                                                                    onclick="xemChiTietDeTai(<?= $dt['id'] ?>, <?= $gvId ?>)">
+                                                                    onclick="xemChiTietDeTai(<?= e($dt['id']) ?>, <?= e($gvId) ?>)">
                                                                     <i class="bi bi-eye"></i>
                                                                 </button>
                                                             </div>
@@ -381,7 +381,7 @@ include_once __DIR__ . '/../includes/header.php';
                                         <div class="accordion-item gv-accordion-item cn">
                                             <h2 class="accordion-header">
                                                 <button class="accordion-button gv-accordion-button cn collapsed" type="button"
-                                                    data-bs-toggle="collapse" data-bs-target="#collapseCN<?= $gvId ?>"
+                                                    data-bs-toggle="collapse" data-bs-target="#collapseCN<?= e($gvId) ?>"
                                                     aria-expanded="false">
                                                     <i class="bi bi-person-down me-2" style="font-size: 1.2rem;"></i>
                                                     <strong><?= htmlspecialchars($gvData['ten_giang_vien']) ?></strong>
@@ -389,7 +389,7 @@ include_once __DIR__ . '/../includes/header.php';
                                                         tài</span>
                                                 </button>
                                             </h2>
-                                            <div id="collapseCN<?= $gvId ?>" class="accordion-collapse collapse"
+                                            <div id="collapseCN<?= e($gvId) ?>" class="accordion-collapse collapse"
                                                 data-bs-parent="#accordionCN">
                                                 <div class="accordion-body gv-accordion-body">
                                                     <div class="list-group list-group-flush">
@@ -407,7 +407,7 @@ include_once __DIR__ . '/../includes/header.php';
                                                                 </div>
                                                                 <button type="button" class="btn btn-info btn-sm ms-2"
                                                                     title="Xem chi tiết"
-                                                                    onclick="xemChiTietDeTai(<?= $dt['id'] ?>, <?= $gvId ?>)">
+                                                                    onclick="xemChiTietDeTai(<?= e($dt['id']) ?>, <?= e($gvId) ?>)">
                                                                     <i class="bi bi-eye"></i>
                                                                 </button>
                                                             </div>
@@ -444,7 +444,7 @@ include_once __DIR__ . '/../includes/header.php';
                                 <?php if (($thongKe['de_tai_cho_duyet'] ?? 0) > 0): ?>
                                     <span
                                         class="position-absolute top-0 end-0 translate-middle badge rounded-pill bg-danger">
-                                        <?= $thongKe['de_tai_cho_duyet'] ?>
+                                        <?= e($thongKe['de_tai_cho_duyet']) ?>
                                     </span>
                                 <?php endif; ?>
                             </a>
@@ -566,7 +566,7 @@ include_once __DIR__ . '/../includes/header.php';
 </div>
 
 <script>
-    const deTaiData = <?= json_encode(array_values($deTaiChoDuyet)) ?>;
+    const deTaiData = <?= js(array_values($deTaiChoDuyet)) ?>;
     let currentGvId = null;
     let currentDeTaiId = null;
 
@@ -761,7 +761,7 @@ include_once __DIR__ . '/../includes/header.php';
         const deTai = deTaiData.find(dt => dt.id == currentDeTaiId);
         const loai = deTai.he_dao_tao === 'co_so_nganh' ? 'co_so_nganh' : 'chuyen_nganh';
 
-        window.location.href = `xu_ly_duyet.php?action=duyet&id=${currentDeTaiId}&loai=${loai}&redirect=dashboard&gv_id=${currentGvId}`;
+        secureNavigate(`xu_ly_duyet.php?action=duyet&id=${currentDeTaiId}&loai=${loai}&redirect=dashboard&gv_id=${currentGvId}`);
     });
 
     // Xử lý từ chối đề tài
@@ -888,7 +888,7 @@ include_once __DIR__ . '/../includes/header.php';
 
                 <div id="alertContainer"></div>
 
-                <form method="POST" action="xu_ly_tao_nguoi_dung.php" id="createUserForm">
+                <form method="POST" action="xu_ly_tao_nguoi_dung.php" id="createUserForm"><?= csrf_field() ?>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Vai trò <span class="text-danger">*</span></label>

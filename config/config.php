@@ -17,6 +17,8 @@ define('IS_HTTPS', $isHttps);
 
 // Session với cấu hình bảo mật (Hỗ trợ HTTPS)
 if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.use_strict_mode', '1');
+    ini_set('session.use_only_cookies', '1');
     session_set_cookie_params([
         'lifetime' => 0,
         'path' => '/',
@@ -61,7 +63,7 @@ define('OTP_EXPIRE_MINUTES', 10);
 define('OTP_LENGTH', 6);
 
 // System Settings
-define('PASSWORD_MIN_LENGTH', 6);
+define('PASSWORD_MIN_LENGTH', 8);
 define('SESSION_TIMEOUT', 3600); // 1 hour
 
 // Vai trò
@@ -95,6 +97,7 @@ if ($_isInfinityFreeEnv) {
 } else {
     // Localhost: hiển thị lỗi để debug
     error_reporting(E_ALL);
-    ini_set('display_errors', 1);
+    ini_set('display_errors', 0);
+    ini_set('log_errors', 1);
     define('DEVELOPMENT_MODE', true);
 }

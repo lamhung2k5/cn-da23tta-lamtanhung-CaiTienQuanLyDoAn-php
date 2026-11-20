@@ -59,7 +59,7 @@ $output = fopen('php://output', 'w');
 fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
 
 // Header của file CSV
-fputcsv($output, [
+fputcsv($output, safeCsvRow([
     'STT',
     'Mã sinh viên',
     'Tên sinh viên',
@@ -74,7 +74,7 @@ fputcsv($output, [
     'Trạng thái',
     'Ngày đăng ký',
     'Ghi chú'
-]);
+]));
 
 // Dữ liệu
 $index = 1;
@@ -82,7 +82,7 @@ foreach ($filteredData as $dk) {
     $deTai = $thongTinDeTai[$dk['de_tai_id']];
     $daDuSoLuong = ($deTai['so_luong_da_dang_ky'] >= $deTai['so_luong_sv']);
     
-    fputcsv($output, [
+    fputcsv($output, safeCsvRow([
         $index++,
         $dk['ma_sinh_vien'],
         $dk['ten_sinh_vien'],
@@ -97,7 +97,7 @@ foreach ($filteredData as $dk) {
         $daDuSoLuong ? 'Đề tài đã đủ' : 'Có thể duyệt',
         formatDate($dk['ngay_dang_ky']),
         $daDuSoLuong ? 'Không thể duyệt do đề tài đã đủ số lượng' : ''
-    ]);
+    ]));
 }
 
 fclose($output);

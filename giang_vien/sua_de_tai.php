@@ -26,9 +26,9 @@ if (!$deTaiId) {
     redirect('giang_vien/danh_sach_de_tai.php');
 }
 
-$deTai = $deTaiModel->findById($deTaiId);
+$deTai = requireTopicOwner($deTaiId);
 
-if (!$deTai || $deTai['giang_vien_id'] != $giangVien['id']) {
+if (!$deTai || (!hasRole(ROLE_LANH_DAO) && $deTai['giang_vien_id'] != ($giangVien['id'] ?? 0))) {
     setFlashMessage('error', 'Bạn không có quyền sửa đề tài này');
     redirect('giang_vien/danh_sach_de_tai.php?loai=' . ($deTai['he_dao_tao'] ?? 'co_so_nganh'));
 }
@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             redirect('giang_vien/danh_sach_de_tai.php?loai=' . $heDaoTao);
         } catch (Exception $e) {
-            $error = 'Lỗi: ' . $e->getMessage();
+            $error = 'Lỗi: ' . safeError($e);
         }
     }
 }
@@ -180,7 +180,7 @@ include_once __DIR__ . '/../includes/header.php';
 
             <div class="card">
                 <div class="card-body">
-                    <form method="POST" action="">
+                    <form method="POST" action=""><?= csrf_field() ?>
                         <input type="hidden" name="he_dao_tao" value="<?= htmlspecialchars($deTai['he_dao_tao']) ?>">
                         
                         <div class="mb-3">

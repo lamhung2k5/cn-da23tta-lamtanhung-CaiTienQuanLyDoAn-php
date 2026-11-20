@@ -4,7 +4,7 @@ Ngày chụp: 20/11/2026. Nguồn: MariaDB 10.4.32 trên localhost.
 
 - `schema.sql`: cấu trúc thực tế của 13 bảng, không có dữ liệu ứng dụng và đã bỏ giá trị bộ đếm AUTO_INCREMENT của dữ liệu thật.
 - `seed.sql`: dữ liệu hoàn toàn giả lập: 3 vai trò, 5 tài khoản, 6 đề tài và 1 đăng ký bị từ chối. Không được import seed vào database đang sử dụng.
-- Schema giữ nguyên hiện trạng: **chưa có bảng `otp_verification`**. Chưa thể coi đây là bộ cài hoàn chỉnh cho luồng đăng ký/OTP; bổ sung bằng migration ở bước tiếp theo.
+- Schema giữ nguyên hiện trạng: **chưa có bảng `otp_verification`**. Theo phạm vi xác nhận ngày 21/11/2026, đăng ký tự do/OTP đã đóng; không cần bổ sung bảng này cho luồng đang sử dụng.
 - Không có `CREATE DATABASE`, `USE` hoặc `DROP TABLE` trong hai file. Người cài chọn database mới trước khi import. Seed chỉ dùng một lần trên schema trống; import lặp sẽ bị trùng khóa.
 
 ## Import bằng XAMPP trên Windows
@@ -39,10 +39,10 @@ Thực hiện trên database mới import, theo thứ tự để dễ đối chi
 1. Mở trang chủ, đề tài công khai, thông báo và thông báo đồ án. Thử vào dashboard khi chưa đăng nhập.
 2. Đăng nhập các tài khoản mẫu theo ba vai trò; kiểm tra dashboard và đăng xuất. Sinh viên không được vào dashboard lãnh đạo.
 3. GV01 tạo một đề tài nháp; sửa đề tài ID 4 rồi gửi duyệt. Lãnh đạo duyệt đề tài ID 3.
-4. SV01 đăng ký đề tài ID 1; kiểm tra trạng thái và `so_luong_da_dang_ky`. SV02 đăng ký cùng đề tài phải bị chặn vì đủ chỗ (ca tuần tự).
+4. SV01 đăng ký đề tài ID 1; phải được duyệt ngay và `so_luong_da_dang_ky` bằng 1. SV02 đăng ký cùng đề tài phải bị chặn vì đủ chỗ (ca tuần tự).
 5. SV02 xóa đăng ký bị từ chối có ID 1. SV01 không được xóa đăng ký đã duyệt theo quy tắc hiện tại.
-6. Trên dữ liệu mẫu, dùng GV02 gọi thao tác duyệt với ID đăng ký mới của SV01; đối chiếu `nguoi_duyet_id`. Sau đó dùng GV01 duyệt lặp hai lần và đối chiếu bộ đếm với số đăng ký thật. Đây là ca tái hiện lỗi hiện hữu, chỉ chạy trên database mẫu.
-7. Đối chiếu bảng cần dùng trong `OTPModel` với schema. Việc thiếu bảng đang chặn kiểm tra đăng ký/OTP hoàn chỉnh.
+6. Trên dữ liệu mẫu, dùng GV02 gọi thao tác duyệt với ID đăng ký mới của SV01; đối chiếu `nguoi_duyet_id`. Sau đó dùng GV01 duyệt lặp hai lần và đối chiếu bộ đếm với số đăng ký thật. Đây là ca kiểm tra bản vá: giảng viên khác phải bị chặn và duyệt lặp không tăng bộ đếm. Chỉ chạy trên database mẫu.
+7. Các endpoint đăng ký tự do/OTP/OAuth/reset công khai phải bị đóng. Chỉ đăng nhập bằng tài khoản do Lãnh đạo cấp/import.
 
 Kết quả và các giới hạn nằm trong `bao_tri/ket_qua_buoc_0.md`. Database thử `qldt_baseline_test` đã được dùng cho lần kiểm tra này; dữ liệu thử sau chạy không đại diện cho seed nguyên trạng.
 

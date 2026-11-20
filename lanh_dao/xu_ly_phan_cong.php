@@ -4,6 +4,7 @@
  */
 
 require_once '../bootstrap.php';
+requirePost();
 requireRole(ROLE_LANH_DAO);
 
 header('Content-Type: application/json');
@@ -36,7 +37,7 @@ if ($action === 'phan_cong') {
         
         echo json_encode(['success' => true, 'message' => 'Cập nhật thành công']);
     } catch (Exception $e) {
-        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        echo json_encode(['success' => false, 'message' => safeError($e)]);
     }
 } else {
     echo json_encode(['success' => false, 'message' => 'Action không hợp lệ']);

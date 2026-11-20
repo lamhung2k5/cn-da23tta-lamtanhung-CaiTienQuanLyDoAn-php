@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 redirect('giang_vien/danh_sach_de_tai.php?loai=' . $loaiDeTai);
             }
         } catch (Exception $e) {
-            $error = 'Lỗi: ' . $e->getMessage();
+            $error = 'Lỗi: ' . safeError($e);
         }
     }
 }
@@ -150,27 +150,27 @@ include_once __DIR__ . '/../includes/header.php';
             <?php if (!empty($error)): ?>
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     <i class="bi bi-exclamation-triangle me-2"></i>
-                    <?= $error ?>
+                    <?= e($error) ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
 
             <div class="card">
                 <div class="card-body">
-                    <form method="POST" action="">
-                        <input type="hidden" name="he_dao_tao" value="<?= $loaiDeTai ?>">
+                    <form method="POST" action=""><?= csrf_field() ?>
+                        <input type="hidden" name="he_dao_tao" value="<?= e($loaiDeTai) ?>">
 
                         <div class="mb-3">
                             <label class="form-label">Tiêu đề đề tài <span class="text-danger">*</span></label>
                             <input type="text" name="tieu_de" class="form-control" placeholder="Nhập tiêu đề đề tài"
-                                required value="<?= $_POST['tieu_de'] ?? '' ?>">
+                                required value="<?= e($_POST['tieu_de'] ?? '') ?>">
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Mô tả đề tài <span class="text-danger">*</span></label>
                             <textarea name="mo_ta" class="form-control" rows="5"
                                 placeholder="Mô tả chi tiết về đề tài, mục tiêu, phạm vi..."
-                                required><?= $_POST['mo_ta'] ?? '' ?></textarea>
+                                required><?= e($_POST['mo_ta'] ?? '') ?></textarea>
                         </div>
 
                         <div class="row mb-3">
@@ -204,20 +204,20 @@ include_once __DIR__ . '/../includes/header.php';
                                 <label class="form-label">Công nghệ sử dụng</label>
                                 <input type="text" name="cong_nghe" class="form-control"
                                     placeholder="VD: PHP, MySQL, Bootstrap, React..."
-                                    value="<?= $_POST['cong_nghe'] ?? '' ?>">
+                                    value="<?= e($_POST['cong_nghe'] ?? '') ?>">
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Yêu cầu sinh viên</label>
                             <textarea name="yeu_cau_sinh_vien" class="form-control" rows="3"
-                                placeholder="Kiến thức, kỹ năng cần có..."><?= $_POST['yeu_cau_sinh_vien'] ?? '' ?></textarea>
+                                placeholder="Kiến thức, kỹ năng cần có..."><?= e($_POST['yeu_cau_sinh_vien'] ?? '') ?></textarea>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Ghi chú</label>
                             <textarea name="ghi_chu" class="form-control" rows="2"
-                                placeholder="Ghi chú thêm (nếu có)..."><?= $_POST['ghi_chu'] ?? '' ?></textarea>
+                                placeholder="Ghi chú thêm (nếu có)..."><?= e($_POST['ghi_chu'] ?? '') ?></textarea>
                         </div>
 
                         <hr>

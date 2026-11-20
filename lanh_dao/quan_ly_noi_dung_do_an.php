@@ -1061,7 +1061,7 @@ include_once __DIR__ . '/../includes/header.php';
                             Cấu hình thông tin trang
                         </div>
                         <div class="card-body-modern">
-                            <form method="POST">
+                            <form method="POST"><?= csrf_field() ?>
                                 <input type="hidden" name="action" value="update_page">
 
                                 <div class="row">
@@ -1155,7 +1155,7 @@ include_once __DIR__ . '/../includes/header.php';
                                         <div class="timeline-item <?= $item['trang_thai'] === 'khoa' ? 'inactive' : '' ?>">
                                             <div class="d-flex justify-content-between align-items-start mb-3">
                                                 <div class="timeline-date">
-                                                    <?= $item['ngay'] ?>/<?= $item['thang'] ?>/<?= $item['nam'] ?>
+                                                    <?= e($item['ngay']) ?>/<?= e($item['thang']) ?>/<?= e($item['nam']) ?>
                                                 </div>
                                                 <div class="d-flex gap-2">
                                                     <span
@@ -1164,28 +1164,28 @@ include_once __DIR__ . '/../includes/header.php';
                                                     </span>
                                                     <div class="btn-group">
                                                         <button class="btn btn-sm btn-warning-modern" data-bs-toggle="modal"
-                                                            data-bs-target="#editTimelineModal" data-id="<?= $item['id'] ?>"
-                                                            data-loai="<?= $item['loai'] ?>"
-                                                            data-thu_tu="<?= $item['thu_tu'] ?>"
+                                                            data-bs-target="#editTimelineModal" data-id="<?= e($item['id']) ?>"
+                                                            data-loai="<?= e($item['loai']) ?>"
+                                                            data-thu_tu="<?= e($item['thu_tu']) ?>"
                                                             data-tieu_de="<?= htmlspecialchars($item['tieu_de']) ?>"
                                                             data-noi_dung="<?= htmlspecialchars($item['noi_dung']) ?>"
-                                                            data-ngay="<?= $item['ngay'] ?>" data-thang="<?= $item['thang'] ?>"
-                                                            data-nam="<?= $item['nam'] ?>"
+                                                            data-ngay="<?= e($item['ngay']) ?>" data-thang="<?= e($item['thang']) ?>"
+                                                            data-nam="<?= e($item['nam']) ?>"
                                                             data-yeu_cau="<?= htmlspecialchars($item['yeu_cau']) ?>"
-                                                            data-trang_thai="<?= $item['trang_thai'] ?>">
+                                                            data-trang_thai="<?= e($item['trang_thai']) ?>">
                                                             <i class="bi bi-pencil"></i>
                                                         </button>
                                                         <form method="POST" class="d-inline"
-                                                            onsubmit="return confirm('Bạn có chắc muốn xóa mốc này?')">
+                                                            onsubmit="return confirm('Bạn có chắc muốn xóa mốc này?')"><?= csrf_field() ?>
                                                             <input type="hidden" name="action" value="delete_timeline">
-                                                            <input type="hidden" name="id" value="<?= $item['id'] ?>">
+                                                            <input type="hidden" name="id" value="<?= e($item['id']) ?>">
                                                             <button type="submit" class="btn btn-sm btn-danger-modern">
                                                                 <i class="bi bi-trash"></i>
                                                             </button>
                                                         </form>
-                                                        <form method="POST" class="d-inline">
+                                                        <form method="POST" class="d-inline"><?= csrf_field() ?>
                                                             <input type="hidden" name="action" value="toggle_timeline">
-                                                            <input type="hidden" name="id" value="<?= $item['id'] ?>">
+                                                            <input type="hidden" name="id" value="<?= e($item['id']) ?>">
                                                             <button type="submit" class="btn btn-sm btn-light-modern"
                                                                 title="<?= $item['trang_thai'] === 'mo' ? 'Khóa' : 'Mở' ?>">
                                                                 <i
@@ -1244,7 +1244,7 @@ include_once __DIR__ . '/../includes/header.php';
                                         <div class="timeline-item <?= $item['trang_thai'] === 'khoa' ? 'inactive' : '' ?>">
                                             <div class="d-flex justify-content-between align-items-start mb-3">
                                                 <div class="timeline-date">
-                                                    <?= $item['ngay'] ?>/<?= $item['thang'] ?>/<?= $item['nam'] ?>
+                                                    <?= e($item['ngay']) ?>/<?= e($item['thang']) ?>/<?= e($item['nam']) ?>
                                                 </div>
                                                 <div class="d-flex gap-2">
                                                     <span
@@ -1253,28 +1253,28 @@ include_once __DIR__ . '/../includes/header.php';
                                                     </span>
                                                     <div class="btn-group">
                                                         <button class="btn btn-sm btn-warning-modern" data-bs-toggle="modal"
-                                                            data-bs-target="#editTimelineModal" data-id="<?= $item['id'] ?>"
-                                                            data-loai="<?= $item['loai'] ?>"
-                                                            data-thu_tu="<?= $item['thu_tu'] ?>"
+                                                            data-bs-target="#editTimelineModal" data-id="<?= e($item['id']) ?>"
+                                                            data-loai="<?= e($item['loai']) ?>"
+                                                            data-thu_tu="<?= e($item['thu_tu']) ?>"
                                                             data-tieu_de="<?= htmlspecialchars($item['tieu_de']) ?>"
                                                             data-noi_dung="<?= htmlspecialchars($item['noi_dung']) ?>"
-                                                            data-ngay="<?= $item['ngay'] ?>" data-thang="<?= $item['thang'] ?>"
-                                                            data-nam="<?= $item['nam'] ?>"
+                                                            data-ngay="<?= e($item['ngay']) ?>" data-thang="<?= e($item['thang']) ?>"
+                                                            data-nam="<?= e($item['nam']) ?>"
                                                             data-yeu_cau="<?= htmlspecialchars($item['yeu_cau']) ?>"
-                                                            data-trang_thai="<?= $item['trang_thai'] ?>">
+                                                            data-trang_thai="<?= e($item['trang_thai']) ?>">
                                                             <i class="bi bi-pencil"></i>
                                                         </button>
                                                         <form method="POST" class="d-inline"
-                                                            onsubmit="return confirm('Bạn có chắc muốn xóa mốc này?')">
+                                                            onsubmit="return confirm('Bạn có chắc muốn xóa mốc này?')"><?= csrf_field() ?>
                                                             <input type="hidden" name="action" value="delete_timeline">
-                                                            <input type="hidden" name="id" value="<?= $item['id'] ?>">
+                                                            <input type="hidden" name="id" value="<?= e($item['id']) ?>">
                                                             <button type="submit" class="btn btn-sm btn-danger-modern">
                                                                 <i class="bi bi-trash"></i>
                                                             </button>
                                                         </form>
-                                                        <form method="POST" class="d-inline">
+                                                        <form method="POST" class="d-inline"><?= csrf_field() ?>
                                                             <input type="hidden" name="action" value="toggle_timeline">
-                                                            <input type="hidden" name="id" value="<?= $item['id'] ?>">
+                                                            <input type="hidden" name="id" value="<?= e($item['id']) ?>">
                                                             <button type="submit" class="btn btn-sm btn-light-modern"
                                                                 title="<?= $item['trang_thai'] === 'mo' ? 'Khóa' : 'Mở' ?>">
                                                                 <i
@@ -1324,7 +1324,7 @@ include_once __DIR__ . '/../includes/header.php';
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <form method="POST">
+                <form method="POST"><?= csrf_field() ?>
                     <div class="modal-body modal-body-modern">
                         <input type="hidden" name="action" value="add_timeline">
                         <input type="hidden" name="loai" id="add_loai">
@@ -1352,7 +1352,7 @@ include_once __DIR__ . '/../includes/header.php';
                                 <label class="form-label form-label-modern">Ngày</label>
                                 <select class="form-control form-control-modern" name="ngay" required>
                                     <?php for ($i = 1; $i <= 31; $i++): ?>
-                                        <option value="<?= $i ?>"><?= $i ?></option>
+                                        <option value="<?= e($i) ?>"><?= e($i) ?></option>
                                     <?php endfor; ?>
                                 </select>
                             </div>
@@ -1360,7 +1360,7 @@ include_once __DIR__ . '/../includes/header.php';
                                 <label class="form-label form-label-modern">Tháng</label>
                                 <select class="form-control form-control-modern" name="thang" required>
                                     <?php for ($i = 1; $i <= 12; $i++): ?>
-                                        <option value="<?= $i ?>">Tháng <?= $i ?></option>
+                                        <option value="<?= e($i) ?>">Tháng <?= e($i) ?></option>
                                     <?php endfor; ?>
                                 </select>
                             </div>
@@ -1368,7 +1368,7 @@ include_once __DIR__ . '/../includes/header.php';
                                 <label class="form-label form-label-modern">Năm</label>
                                 <select class="form-control form-control-modern" name="nam" required>
                                     <?php for ($i = date('Y'); $i <= date('Y') + 2; $i++): ?>
-                                        <option value="<?= $i ?>"><?= $i ?></option>
+                                        <option value="<?= e($i) ?>"><?= e($i) ?></option>
                                     <?php endfor; ?>
                                 </select>
                             </div>
@@ -1406,7 +1406,7 @@ include_once __DIR__ . '/../includes/header.php';
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <form method="POST">
+                <form method="POST"><?= csrf_field() ?>
                     <div class="modal-body modal-body-modern">
                         <input type="hidden" name="action" value="update_timeline">
                         <input type="hidden" name="id" id="edit_id">
@@ -1437,7 +1437,7 @@ include_once __DIR__ . '/../includes/header.php';
                                 <select class="form-control form-control-modern" name="ngay" id="edit_ngay" required>
                                     <option value="">Chọn ngày</option>
                                     <?php for ($i = 1; $i <= 31; $i++): ?>
-                                        <option value="<?= $i ?>"><?= $i ?></option>
+                                        <option value="<?= e($i) ?>"><?= e($i) ?></option>
                                     <?php endfor; ?>
                                 </select>
                             </div>
@@ -1446,7 +1446,7 @@ include_once __DIR__ . '/../includes/header.php';
                                 <select class="form-control form-control-modern" name="thang" id="edit_thang" required>
                                     <option value="">Chọn tháng</option>
                                     <?php for ($i = 1; $i <= 12; $i++): ?>
-                                        <option value="<?= $i ?>">Tháng <?= $i ?></option>
+                                        <option value="<?= e($i) ?>">Tháng <?= e($i) ?></option>
                                     <?php endfor; ?>
                                 </select>
                             </div>
@@ -1455,7 +1455,7 @@ include_once __DIR__ . '/../includes/header.php';
                                 <select class="form-control form-control-modern" name="nam" id="edit_nam" required>
                                     <option value="">Chọn năm</option>
                                     <?php for ($i = date('Y'); $i <= date('Y') + 2; $i++): ?>
-                                        <option value="<?= $i ?>"><?= $i ?></option>
+                                        <option value="<?= e($i) ?>"><?= e($i) ?></option>
                                     <?php endfor; ?>
                                 </select>
                             </div>

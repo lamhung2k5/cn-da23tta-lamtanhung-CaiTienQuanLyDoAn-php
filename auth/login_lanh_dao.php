@@ -7,4 +7,4 @@
 require_once '../bootstrap.php';
 
 // Chuyển hướng đến trang đăng nhập thống nhất với role filter
-redirect('login.php?role=' . ROLE_LANH_DAO);
+redirect('auth/login.php?role=' . ROLE_LANH_DAO);

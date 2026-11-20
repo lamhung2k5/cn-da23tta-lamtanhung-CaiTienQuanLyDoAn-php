@@ -116,7 +116,7 @@ include_once __DIR__ . '/../includes/header.php';
                         href="?loai=co_so_nganh<?= !empty($_GET['trang_thai']) ? '&trang_thai=' . urlencode($_GET['trang_thai']) : '' ?>">
                         <i class="bi bi-journal-code"></i> Cơ sở ngành
                         <span
-                            class="badge bg-<?= $loaiDeTai === 'co_so_nganh' ? 'primary' : 'secondary' ?> ms-1"><?= $tongCSN ?></span>
+                            class="badge bg-<?= $loaiDeTai === 'co_so_nganh' ? 'primary' : 'secondary' ?> ms-1"><?= e($tongCSN) ?></span>
                     </a>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -124,7 +124,7 @@ include_once __DIR__ . '/../includes/header.php';
                         href="?loai=chuyen_nganh<?= !empty($_GET['trang_thai']) ? '&trang_thai=' . urlencode($_GET['trang_thai']) : '' ?>">
                         <i class="bi bi-mortarboard"></i> Chuyên ngành
                         <span
-                            class="badge bg-<?= $loaiDeTai === 'chuyen_nganh' ? 'success' : 'secondary' ?> ms-1"><?= $tongCN ?></span>
+                            class="badge bg-<?= $loaiDeTai === 'chuyen_nganh' ? 'success' : 'secondary' ?> ms-1"><?= e($tongCN) ?></span>
                     </a>
                 </li>
             </ul>
@@ -133,7 +133,7 @@ include_once __DIR__ . '/../includes/header.php';
             <div class="card mb-4">
                 <div class="card-body">
                     <form method="GET" action="" class="row g-3">
-                        <input type="hidden" name="loai" value="<?= $loaiDeTai ?>">
+                        <input type="hidden" name="loai" value="<?= e($loaiDeTai) ?>">
                         <div class="col-md-6">
                             <label class="form-label">Trạng thái</label>
                             <select name="trang_thai" class="form-select" onchange="this.form.submit()">
@@ -148,7 +148,7 @@ include_once __DIR__ . '/../includes/header.php';
                         <div class="col-md-6">
                             <label class="form-label">&nbsp;</label>
                             <div>
-                                <a href="?loai=<?= $loaiDeTai ?>" class="btn btn-danger text-white">
+                                <a href="?loai=<?= e($loaiDeTai) ?>" class="btn btn-danger text-white">
                                     <i class="bi bi-arrow-clockwise"></i> Làm mới
                                 </a>
                             </div>
@@ -162,7 +162,7 @@ include_once __DIR__ . '/../includes/header.php';
                     <div class="card-body text-center py-5">
                         <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
                         <p class="text-muted mt-3">Chưa có đề tài <?= getHeDaoTaoLabel($loaiDeTai) ?></p>
-                        <a href="tao_de_tai.php?loai=<?= $loaiDeTai ?>" class="btn btn-primary">
+                        <a href="tao_de_tai.php?loai=<?= e($loaiDeTai) ?>" class="btn btn-primary">
                             Tạo đề tài <?= $loaiDeTai === 'co_so_nganh' ? 'Cơ sở ngành' : 'Chuyên ngành' ?>
                         </a>
                     </div>
@@ -170,8 +170,8 @@ include_once __DIR__ . '/../includes/header.php';
             <?php else: ?>
                 <!-- Không còn cảnh báo giới hạn -->
 
-                <form id="bulkApprovalForm" method="POST" action="gui_duyet.php">
-                    <input type="hidden" name="loai" value="<?= $loaiDeTai ?>">
+                <form id="bulkApprovalForm" method="POST" action="gui_duyet.php"><?= csrf_field() ?>
+                    <input type="hidden" name="loai" value="<?= e($loaiDeTai) ?>">
                     <div class="card">
                         <div
                             class="card-header bg-<?= $loaiDeTai === 'co_so_nganh' ? 'primary' : 'success' ?> text-white d-flex justify-content-between align-items-center">
@@ -209,7 +209,7 @@ include_once __DIR__ . '/../includes/header.php';
                                                 <?php if ($hasNhap): ?>
                                                     <td class="text-center">
                                                         <?php if ($dt['trang_thai'] === 'nhap'): ?>
-                                                            <input type="checkbox" name="selected_topics[]" value="<?= $dt['id'] ?>"
+                                                            <input type="checkbox" name="selected_topics[]" value="<?= e($dt['id']) ?>"
                                                                 class="form-check-input topic-checkbox">
                                                         <?php endif; ?>
                                                     </td>
@@ -228,31 +228,31 @@ include_once __DIR__ . '/../includes/header.php';
                                                     $daDuSoLuong = ($dt['so_luong_da_dang_ky'] >= $dt['so_luong_sv']);
                                                     $badgeClass = $daDuSoLuong ? 'bg-danger' : 'bg-info';
                                                     ?>
-                                                    <span class="badge <?= $badgeClass ?>">
-                                                        <?= $dt['so_luong_da_dang_ky'] ?>/<?= $dt['so_luong_sv'] ?>
+                                                    <span class="badge <?= e($badgeClass) ?>">
+                                                        <?= e($dt['so_luong_da_dang_ky']) ?>/<?= e($dt['so_luong_sv']) ?>
                                                     </span>
                                                 </td>
                                                 <td class="text-center"><?= getStatusBadge($dt['trang_thai']) ?></td>
                                                 <td><?= formatDate($dt['created_at']) ?></td>
                                                 <td class="text-center">
                                                     <div class="btn-group btn-group-sm">
-                                                        <a href="chi_tiet_de_tai.php?id=<?= $dt['id'] ?>" class="btn btn-info"
+                                                        <a href="chi_tiet_de_tai.php?id=<?= e($dt['id']) ?>" class="btn btn-info"
                                                             title="Chi tiết">
                                                             <i class="bi bi-eye"></i>
                                                         </a>
                                                         <?php if ($dt['trang_thai'] === 'nhap' || $dt['trang_thai'] === 'tu_choi'): ?>
-                                                            <a href="sua_de_tai.php?id=<?= $dt['id'] ?>" class="btn btn-warning"
+                                                            <a href="sua_de_tai.php?id=<?= e($dt['id']) ?>" class="btn btn-warning"
                                                                 title="Sửa">
                                                                 <i class="bi bi-pencil"></i>
                                                             </a>
-                                                            <a href="xoa_de_tai.php?id=<?= $dt['id'] ?>" class="btn btn-danger"
+                                                            <a href="xoa_de_tai.php?id=<?= e($dt['id']) ?>" class="btn btn-danger"
                                                                 onclick="return confirm('Bạn có chắc muốn xóa đề tài này?')"
                                                                 title="Xóa">
                                                                 <i class="bi bi-trash"></i>
                                                             </a>
                                                         <?php endif; ?>
                                                         <?php if ($dt['trang_thai'] === 'nhap'): ?>
-                                                            <a href="gui_duyet.php?id=<?= $dt['id'] ?>" class="btn btn-success"
+                                                            <a href="gui_duyet.php?id=<?= e($dt['id']) ?>" class="btn btn-success"
                                                                 onclick="return confirm('Gửi đề tài này chờ duyệt?')"
                                                                 title="Gửi duyệt">
                                                                 <i class="bi bi-send"></i>

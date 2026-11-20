@@ -4,6 +4,7 @@
  */
 
 require_once '../bootstrap.php';
+requirePost();
 
 // Cho phép cả giảng viên và lãnh đạo truy cập
 if (!isLoggedIn() || ($_SESSION['vai_tro'] !== ROLE_GIANG_VIEN && $_SESSION['vai_tro'] !== ROLE_LANH_DAO)) {
@@ -16,15 +17,16 @@ $thongBaoModel = new ThongBaoModel();
 $deTaiModel = new DeTaiModel();
 
 // Xử lý duyệt
-if (isset($_GET['action']) && $_GET['action'] === 'duyet' && isset($_GET['id'])) {
-    $dangKyId = (int)$_GET['id'];
-    $loai = isset($_GET['loai']) ? $_GET['loai'] : 'co_so_nganh';
-    $xem = isset($_GET['xem']) ? (int)$_GET['xem'] : null;
-    $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : '';
+if (isset($_POST['action']) && $_POST['action'] === 'duyet' && isset($_POST['id'])) {
+    $dangKyId = (int)$_POST['id'];
+    $loai = isset($_POST['loai']) ? $_POST['loai'] : 'co_so_nganh';
+    $xem = isset($_POST['xem']) ? (int)$_POST['xem'] : null;
+    $redirect = isset($_POST['redirect']) ? $_POST['redirect'] : '';
     
+    requireRegistrationOwner($dangKyId);
     $result = $dangKyModel->duyetSinhVien($dangKyId, $user['id']);
     
-    if ($result['success']) {
+    if ($result['success'] && !empty($result['changed'])) {
         // Lấy thông tin để gửi thông báo
         $dangKy = $dangKyModel->findById($dangKyId);
         $deTai = $deTaiModel->findById($dangKy['de_tai_id']);
@@ -64,9 +66,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'tu_choi') {
         }
     }
     
+    requireRegistrationOwner($dangKyId);
     $result = $dangKyModel->tuChoiSinhVien($dangKyId, $lyDo);
     
-    if ($result['success']) {
+    if ($result['success'] && !empty($result['changed'])) {
         // Lấy thông tin để gửi thông báo
         $dangKy = $dangKyModel->findById($dangKyId);
         $deTai = $deTaiModel->findById($dangKy['de_tai_id']);

@@ -179,12 +179,12 @@ include_once __DIR__ . '/../includes/header.php';
                                                 </div>
                                                 <div class="d-flex gap-1">
                                                     <button type="button" class="btn btn-sm btn-outline-primary" 
-                                                            onclick="toggleSinhVien('csn-<?= $nhom['de_tai_id'] ?>')" 
+                                                            onclick="toggleSinhVien('csn-<?= e($nhom['de_tai_id']) ?>')"
                                                             title="Xổ xuống/lên">
-                                                        <i class="bi bi-chevron-down" id="icon-csn-<?= $nhom['de_tai_id'] ?>"></i>
+                                                        <i class="bi bi-chevron-down" id="icon-csn-<?= e($nhom['de_tai_id']) ?>"></i>
                                                     </button>
                                                     <button type="button" class="btn btn-info btn-sm" 
-                                                            onclick="xemChiTietDeTai(<?= $nhom['de_tai_id'] ?>, 'co_so_nganh')" 
+                                                            onclick="xemChiTietDeTai(<?= e($nhom['de_tai_id']) ?>, 'co_so_nganh')"
                                                             title="Xem chi tiết">
                                                         <i class="bi bi-eye"></i>
                                                     </button>
@@ -192,7 +192,7 @@ include_once __DIR__ . '/../includes/header.php';
                                             </div>
                                             
                                             <!-- Danh sách sinh viên -->
-                                            <div class="row g-2 collapse" id="csn-<?= $nhom['de_tai_id'] ?>">
+                                            <div class="row g-2 collapse" id="csn-<?= e($nhom['de_tai_id']) ?>">
                                                 <?php foreach ($nhom['sinh_vien'] as $sv): ?>
                                                     <div class="col-12">
                                                         <div class="d-flex align-items-center gap-2 p-2 bg-white rounded border">
@@ -203,7 +203,7 @@ include_once __DIR__ . '/../includes/header.php';
                                                             <div class="flex-grow-1">
                                                                 <div class="fw-semibold"><?= htmlspecialchars($sv['ten_sinh_vien']) ?></div>
                                                                 <small class="text-muted">
-                                                                    <?= $sv['ma_sinh_vien'] ?>
+                                                                    <?= e($sv['ma_sinh_vien']) ?>
                                                                     <?php if (!empty($sv['lop'])): ?>
                                                                         <span class="mx-1">-</span>
                                                                         <span class="text-dark" style="font-size: 0.75rem;"><?= htmlspecialchars($sv['lop']) ?></span>
@@ -211,10 +211,10 @@ include_once __DIR__ . '/../includes/header.php';
                                                                 </small>
                                                             </div>
                                                             <div class="d-flex gap-1 flex-shrink-0">
-                                                                <button class="btn btn-success btn-sm" onclick="duyetSinhVien(<?= $sv['id'] ?>)" title="Duyệt">
+                                                                <button class="btn btn-success btn-sm" onclick="duyetSinhVien(<?= e($sv['id']) ?>)" title="Duyệt">
                                                                     <i class="bi bi-check-circle"></i>
                                                                 </button>
-                                                                <button class="btn btn-danger btn-sm" onclick="tuChoiSinhVien(<?= $sv['id'] ?>)" title="Từ chối">
+                                                                <button class="btn btn-danger btn-sm" onclick="tuChoiSinhVien(<?= e($sv['id']) ?>)" title="Từ chối">
                                                                     <i class="bi bi-x-circle"></i>
                                                                 </button>
                                                             </div>
@@ -266,12 +266,12 @@ include_once __DIR__ . '/../includes/header.php';
                                                 </div>
                                                 <div class="d-flex gap-1">
                                                     <button type="button" class="btn btn-sm btn-outline-success" 
-                                                            onclick="toggleSinhVien('cn-<?= $nhom['de_tai_id'] ?>')" 
+                                                            onclick="toggleSinhVien('cn-<?= e($nhom['de_tai_id']) ?>')"
                                                             title="Xổ xuống/lên">
-                                                        <i class="bi bi-chevron-down" id="icon-cn-<?= $nhom['de_tai_id'] ?>"></i>
+                                                        <i class="bi bi-chevron-down" id="icon-cn-<?= e($nhom['de_tai_id']) ?>"></i>
                                                     </button>
                                                     <button type="button" class="btn btn-info btn-sm" 
-                                                            onclick="xemChiTietDeTai(<?= $nhom['de_tai_id'] ?>, 'chuyen_nganh')" 
+                                                            onclick="xemChiTietDeTai(<?= e($nhom['de_tai_id']) ?>, 'chuyen_nganh')"
                                                             title="Xem chi tiết">
                                                         <i class="bi bi-eye"></i>
                                                     </button>
@@ -279,7 +279,7 @@ include_once __DIR__ . '/../includes/header.php';
                                             </div>
                                             
                                             <!-- Danh sách sinh viên -->
-                                            <div class="row g-2 collapse" id="cn-<?= $nhom['de_tai_id'] ?>">
+                                            <div class="row g-2 collapse" id="cn-<?= e($nhom['de_tai_id']) ?>">
                                                 <?php foreach ($nhom['sinh_vien'] as $sv): ?>
                                                     <div class="col-12">
                                                         <div class="d-flex align-items-center gap-2 p-2 bg-white rounded border">
@@ -290,7 +290,7 @@ include_once __DIR__ . '/../includes/header.php';
                                                             <div class="flex-grow-1">
                                                                 <div class="fw-semibold"><?= htmlspecialchars($sv['ten_sinh_vien']) ?></div>
                                                                 <small class="text-muted">
-                                                                    <?= $sv['ma_sinh_vien'] ?>
+                                                                    <?= e($sv['ma_sinh_vien']) ?>
                                                                     <?php if (!empty($sv['lop'])): ?>
                                                                         <span class="mx-1">-</span>
                                                                         <span class="text-dark" style="font-size: 0.75rem;"><?= htmlspecialchars($sv['lop']) ?></span>
@@ -298,10 +298,10 @@ include_once __DIR__ . '/../includes/header.php';
                                                                 </small>
                                                             </div>
                                                             <div class="d-flex gap-1 flex-shrink-0">
-                                                                <button class="btn btn-success btn-sm" onclick="duyetSinhVien(<?= $sv['id'] ?>)" title="Duyệt">
+                                                                <button class="btn btn-success btn-sm" onclick="duyetSinhVien(<?= e($sv['id']) ?>)" title="Duyệt">
                                                                     <i class="bi bi-check-circle"></i>
                                                                 </button>
-                                                                <button class="btn btn-danger btn-sm" onclick="tuChoiSinhVien(<?= $sv['id'] ?>)" title="Từ chối">
+                                                                <button class="btn btn-danger btn-sm" onclick="tuChoiSinhVien(<?= e($sv['id']) ?>)" title="Từ chối">
                                                                     <i class="bi bi-x-circle"></i>
                                                                 </button>
                                                             </div>
@@ -382,7 +382,7 @@ include_once __DIR__ . '/../includes/header.php';
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title fs-4">Từ chối sinh viên</h5>
             </div>
-            <form id="tuChoiForm" method="POST" action="xu_ly_duyet.php">
+            <form id="tuChoiForm" method="POST" action="xu_ly_duyet.php"><?= csrf_field() ?>
                 <div class="modal-body p-4">
                     <input type="hidden" name="action" value="tu_choi">
                     <input type="hidden" name="dang_ky_id" id="tuChoiDangKyId">
@@ -457,7 +457,7 @@ include_once __DIR__ . '/../includes/header.php';
 
 <script>
 // Dữ liệu sinh viên từ PHP
-const danhSachSinhVien = <?= json_encode(array_values($svChoDuyet)) ?>;
+const danhSachSinhVien = <?= js(array_values($svChoDuyet)) ?>;
 
 function xemChiTietDeTai(deTaiId, loai) {
     // Lọc sinh viên theo đề tài
@@ -512,7 +512,7 @@ function xemChiTietDeTai(deTaiId, loai) {
         }) : 'N/A';
         
         html += `
-            <tr class="student-item" data-mssv="${sv.ma_sinh_vien}" data-name="${sv.ten_sinh_vien.toLowerCase()}" data-class="${sv.lop || ''}">
+            <tr class="student-item" data-mssv="${escapeText(sv.ma_sinh_vien)}" data-name="${escapeText(sv.ten_sinh_vien.toLowerCase())}" data-class="${escapeText(sv.lop || '')}">
                 <td class="text-center">${index + 1}</td>
                 <td>
                     <div class="d-flex align-items-center gap-2">
@@ -522,12 +522,12 @@ function xemChiTietDeTai(deTaiId, loai) {
                         </div>
                         <div>
                             <div class="fw-semibold">${escapeHtml(sv.ten_sinh_vien)}</div>
-                            <small class="text-muted">${sv.email_sinh_vien || ''}</small>
+                            <small class="text-muted">${escapeText(sv.email_sinh_vien || '')}</small>
                         </div>
                     </div>
                 </td>
-                <td><span class="text-dark">${sv.ma_sinh_vien}</span></td>
-                <td>${sv.lop || 'N/A'}</td>
+                <td><span class="text-dark">${escapeText(sv.ma_sinh_vien)}</span></td>
+                <td>${escapeText(sv.lop || 'N/A')}</td>
                 <td><span class="badge bg-${colorClass}">${loaiDeTai}</span></td>
                 <td><small>${ngayDangKy}</small></td>
                 <td class="text-center">
@@ -578,7 +578,7 @@ function filterStudents() {
 
 function duyetSinhVien(dangKyId) {
     if (confirm('Bạn có chắc muốn duyệt sinh viên này?')) {
-        window.location.href = 'xu_ly_duyet.php?action=duyet&id=' + dangKyId + '&redirect=dashboard';
+        secureNavigate('xu_ly_duyet.php?action=duyet&id=' + dangKyId + '&redirect=dashboard');
     }
 }
 

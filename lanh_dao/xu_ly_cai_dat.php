@@ -59,10 +59,10 @@ if ($action === 'update_ke_hoach') {
     } catch (Exception $e) {
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
             header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+            echo json_encode(['success' => false, 'message' => safeError($e)]);
             exit;
         }
-        $_SESSION['error'] = 'Lỗi: ' . $e->getMessage();
+        $_SESSION['error'] = 'Lỗi: ' . safeError($e);
     }
     
     redirect('lanh_dao/cai_dat_thong_so.php#tab-ke-hoach');
@@ -114,10 +114,10 @@ if ($action === 'update_ke_hoach_cn') {
     } catch (Exception $e) {
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
             header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+            echo json_encode(['success' => false, 'message' => safeError($e)]);
             exit;
         }
-        $_SESSION['error'] = 'Lỗi: ' . $e->getMessage();
+        $_SESSION['error'] = 'Lỗi: ' . safeError($e);
     }
     
     redirect('lanh_dao/cai_dat_thong_so.php#tab-ke-hoach');
@@ -219,10 +219,10 @@ if ($action === 'update_single_limit') {
     } catch (Exception $e) {
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
             header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+            echo json_encode(['success' => false, 'message' => safeError($e)]);
             exit;
         }
-        $_SESSION['error'] = 'Lỗi: ' . $e->getMessage();
+        $_SESSION['error'] = 'Lỗi: ' . safeError($e);
     }
     
     redirect('lanh_dao/cai_dat_thong_so.php#tab-gioi-han');
@@ -291,7 +291,7 @@ if ($action === 'update_giang_vien_limit') {
         
         // Không hiển thị thông báo success để UX mượt mà hơn (silent update)
     } catch (Exception $e) {
-        $_SESSION['error'] = 'Lỗi: ' . $e->getMessage();
+        $_SESSION['error'] = 'Lỗi: ' . safeError($e);
     }
     
     redirect('lanh_dao/cai_dat_thong_so.php#tab-gioi-han');
@@ -340,7 +340,7 @@ try {
         $_SESSION['error'] = 'Không thể cập nhật cài đặt';
     }
 } catch (Exception $e) {
-    $_SESSION['error'] = 'Lỗi: ' . $e->getMessage();
+    $_SESSION['error'] = 'Lỗi: ' . safeError($e);
 }
 
 redirect('lanh_dao/cai_dat_thong_so.php');

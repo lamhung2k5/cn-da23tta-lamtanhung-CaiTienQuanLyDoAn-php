@@ -1,24 +1,7 @@
 <?php
-/**
- * ĐĂNG NHẬP GITHUB
- */
-
-require_once '../bootstrap.php';
-
-// Nếu đã đăng nhập, chuyển về trang chủ
-if (isLoggedIn()) {
-    redirect('index.php');
-}
-
-// Kiểm tra cấu hình GitHub OAuth
-$configErrors = checkGitHubOAuthConfig();
-if (!empty($configErrors)) {
-    setFlashMessage('error', 'Cấu hình GitHub OAuth chưa đúng: ' . implode(', ', $configErrors));
-    redirect('login.php');
-}
-
-// Chuyển hướng đến GitHub OAuth
-$githubLoginUrl = getGitHubLoginUrl();
-header('Location: ' . $githubLoginUrl);
+// Only school-issued accounts may sign in through auth/login.php.
+http_response_code(404);
+header('Content-Type: text/plain; charset=utf-8');
+header('Cache-Control: no-store');
+echo 'Chức năng này không được sử dụng. Vui lòng liên hệ Lãnh đạo.';
 exit;
-?>

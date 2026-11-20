@@ -34,6 +34,8 @@ if (!isset($pageTitle)) {
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+<meta name="csrf-token" content="<?= e(generateCSRF()) ?>">
+<script src="<?= e(BASE_URL) ?>assets/js/security.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Hệ thống quản lý đề tài cơ sở ngành và chuyên ngành - Khoa Công nghệ thông tin">
@@ -252,7 +254,7 @@ if (!isset($pageTitle)) {
                         <i class="bi bi-bell fs-5" style="color: #ffffff;"></i>
                         <?php if ($soThongBaoChuaDoc > 0): ?>
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
-                                <?= $soThongBaoChuaDoc ?>
+                                <?= e($soThongBaoChuaDoc) ?>
                             </span>
                         <?php endif; ?>
                     </a>
@@ -262,7 +264,7 @@ if (!isset($pageTitle)) {
                             <div class="d-flex justify-content-between align-items-center">
                                 <h6 class="mb-0 fw-bold">Thông báo</h6>
                                 <?php if ($soThongBaoChuaDoc > 0): ?>
-                                    <span class="badge bg-danger rounded-pill"><?= $soThongBaoChuaDoc ?></span>
+                                    <span class="badge bg-danger rounded-pill"><?= e($soThongBaoChuaDoc) ?></span>
                                 <?php endif; ?>
                             </div>
                         </li>
@@ -272,7 +274,7 @@ if (!isset($pageTitle)) {
                             <?php foreach ($danhSachThongBao as $tb): ?>
                                 <li>
                                     <a class="dropdown-item <?= $tb['da_doc'] == 0 ? 'bg-light' : '' ?>" 
-                                       href="<?= !empty($tb['link']) ? BASE_URL . $tb['link'] : '#' ?>" 
+                                       href="<?= e(safeHref(!empty($tb['link']) ? BASE_URL . $tb['link'] : '#')) ?>"
                                        style="padding: 0.75rem 1rem; border-bottom: 1px solid #f0f0f0; white-space: normal;">
                                         <div class="d-flex align-items-start gap-2">
                                             <i class="bi bi-bell-fill text-danger mt-1 flex-shrink-0"></i>
@@ -297,7 +299,7 @@ if (!isset($pageTitle)) {
                                     $thongBaoUrl .= '?mode=giang_vien';
                                 }
                                 ?>
-                                <a class="dropdown-item small text-primary" href="<?= $thongBaoUrl ?>" style="padding: 0.5rem;">
+                                <a class="dropdown-item small text-primary" href="<?= e($thongBaoUrl) ?>" style="padding: 0.5rem;">
                                     Xem tất cả thông báo
                                 </a>
                             </li>
@@ -492,7 +494,7 @@ $flashInfo = getFlashMessage('info');
     <?php if ($flashSuccess): ?>
         <div class="alert custom-alert custom-alert-success alert-dismissible fade show" role="alert">
             <i class="bi bi-check-circle-fill"></i>
-            <strong>Thành công</strong> <?= $flashSuccess ?>
+            <strong>Thành công</strong> <?= e($flashSuccess) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>
@@ -500,14 +502,14 @@ $flashInfo = getFlashMessage('info');
     <?php if ($flashError): ?>
         <div class="alert custom-alert custom-alert-danger alert-dismissible fade show" role="alert">
             <i class="bi bi-exclamation-triangle-fill"></i>
-            <strong>Lỗi</strong> <?= $flashError ?>
+            <strong>Lỗi</strong> <?= e($flashError) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>
     
     <?php if ($flashWarning): ?>
         <div class="alert custom-alert custom-alert-warning alert-dismissible fade show" role="alert">
-            <strong>Cảnh báo</strong> <?= $flashWarning ?>
+            <strong>Cảnh báo</strong> <?= e($flashWarning) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>
@@ -515,7 +517,7 @@ $flashInfo = getFlashMessage('info');
     <?php if ($flashInfo): ?>
         <div class="alert custom-alert custom-alert-info alert-dismissible fade show" role="alert">
             <i class="bi bi-info-circle-fill"></i>
-            <strong>Thông tin</strong> <?= $flashInfo ?>
+            <strong>Thông tin</strong> <?= e($flashInfo) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>

@@ -310,7 +310,7 @@ function phanCongGiangVien(dangKyId, giangVienId, giangVienTen, autoNext = false
                     btn.classList.add('btn-light');
                 });
             } else {
-                cell.innerHTML = `<span class="text-dark">${giangVienTen}</span>`;
+                cell.innerHTML = `<span class="text-dark">${escapeText(giangVienTen)}</span>`;
                 // Cập nhật data attributes
                 currentButton.setAttribute('data-gv-cham-id', giangVienId);
                 currentButton.setAttribute('data-gv-cham-ten', giangVienTen);
@@ -339,7 +339,7 @@ function phanCongGiangVien(dangKyId, giangVienId, giangVienTen, autoNext = false
                             data-sv-mssv="${svMssv}"
                             data-sv-lop="${svLop}"
                             data-de-tai="${deTai}"
-                            data-gv-ten="${giangVienTen}"
+                            data-gv-ten="${escapeText(giangVienTen)}"
                             data-gv-ma=""
                             title="Xem chi tiết">
                         <i class="bi bi-eye"></i>

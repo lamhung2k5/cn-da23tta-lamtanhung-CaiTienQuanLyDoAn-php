@@ -113,7 +113,7 @@ class DeTaiModel extends BaseModel {
                 
             } catch (Exception $e) {
                 $ketQua['that_bai']++;
-                $ketQua['loi'][] = "Đề tài #" . ($index + 1) . ": " . $e->getMessage();
+                $ketQua['loi'][] = "Đề tài #" . ($index + 1) . ": " . safeError($e);
             }
         }
         
@@ -298,7 +298,7 @@ class DeTaiModel extends BaseModel {
             return ['success' => true, 'message' => 'Duyệt đề tài thành công'];
         } catch (Exception $e) {
             $this->db->rollBack();
-            return ['success' => false, 'message' => 'Lỗi: ' . $e->getMessage()];
+            return ['success' => false, 'message' => 'Lỗi: ' . safeError($e)];
         }
     }
     
@@ -322,7 +322,7 @@ class DeTaiModel extends BaseModel {
             return ['success' => true, 'message' => 'Từ chối đề tài thành công'];
         } catch (Exception $e) {
             $this->db->rollBack();
-            return ['success' => false, 'message' => 'Lỗi: ' . $e->getMessage()];
+            return ['success' => false, 'message' => 'Lỗi: ' . safeError($e)];
         }
     }
     

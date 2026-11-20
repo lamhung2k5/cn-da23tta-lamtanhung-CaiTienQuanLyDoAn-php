@@ -77,7 +77,7 @@ include_once __DIR__ . '/../includes/header.php';
 
             <?php if ($soDeTaiHienTai >= $soDeTaiToiDa): ?>
                 <div class="alert alert-warning" role="alert">
-                    <strong>Thông báo:</strong> Bạn đã đạt giới hạn số lượng đề tài được phép tạo là (<?= $soDeTaiToiDa ?>
+                    <strong>Thông báo:</strong> Bạn đã đạt giới hạn số lượng đề tài được phép tạo là (<?= e($soDeTaiToiDa) ?>
                     đề tài). Vui lòng liên hệ lãnh đạo nếu cần tăng số lượng đề tài.
                 </div>
             <?php endif; ?>

@@ -6,6 +6,8 @@ require_once __DIR__ . '/bootstrap.php';
 <html lang="vi">
 
 <head>
+<meta name="csrf-token" content="<?= e(generateCSRF()) ?>">
+<script src="<?= e(BASE_URL) ?>assets/js/security.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thông tin nhân sự Khoa Công nghệ thông tin </title>
@@ -1047,7 +1049,7 @@ require_once __DIR__ . '/bootstrap.php';
                                 <li><a class="dropdown-item" href="danh_sach_de_tai_cong_khai.php"><i class="bi bi-journal-text me-2"></i>Danh sách đề tài</a></li>
                                 <?php $menuLinks = getMenuLinks(); ?>
                                 <?php if (!empty($menuLinks['ket_qua_thi'])): ?>
-                                    <li><a class="dropdown-item" href="<?= $menuLinks['ket_qua_thi'] ?>" target="_blank"><i class="bi bi-file-earmark-text me-2"></i>Kết quả thi</a></li>
+                                    <li><a class="dropdown-item" href="<?= e($menuLinks['ket_qua_thi']) ?>" target="_blank"><i class="bi bi-file-earmark-text me-2"></i>Kết quả thi</a></li>
                                 <?php endif; ?>
                             </ul>
                         </li>

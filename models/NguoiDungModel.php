@@ -28,78 +28,24 @@ class NguoiDungModel extends BaseModel {
      */
     public function login($email, $password) {
         $user = $this->findByEmail($email);
-        
-        if (!$user) {
-            return ['success' => false, 'message' => 'Email không tồn tại'];
+        if (!$user || $user['trang_thai'] !== 'active' || !verifyPassword($password, $user['mat_khau'])) {
+            return ['success' => false, 'message' => 'Tài khoản hoặc mật khẩu không hợp lệ.'];
         }
-        
-        if ($user['trang_thai'] !== 'active') {
-            return ['success' => false, 'message' => 'Tài khoản đã bị khóa'];
+        if (password_get_info($user['mat_khau'])['algoName'] === 'bcrypt' && password_needs_rehash($user['mat_khau'], PASSWORD_BCRYPT)) {
+            $user['mat_khau'] = password_hash($password, PASSWORD_BCRYPT);
+            $this->update($user['id'], ['mat_khau' => $user['mat_khau']]);
         }
-        
-        // Kiểm tra mật khẩu bằng password_verify()
-        $passwordMatch = false;
-        $needsRehash = false;
-
-        // 1. Kiểm tra chính bằng password_verify()
-        if (password_verify($password, $user['mat_khau'])) {
-            $passwordMatch = true;
-            // Kiểm tra xem hash có cần rehash (ví dụ khi nâng cấp algo/cost)
-            if (password_needs_rehash($user['mat_khau'], PASSWORD_BCRYPT)) {
-                $needsRehash = true;
-            }
-        }
-        // 2. Fallback cho mật khẩu cũ (MD5 hoặc Plaintext) và tự động nâng cấp sang password_hash()
-        elseif ($user['mat_khau'] === md5($password) || $user['mat_khau'] === $password) {
-            $passwordMatch = true;
-            $needsRehash = true;
-        }
-        
-        if (!$passwordMatch) {
-            return ['success' => false, 'message' => 'Mật khẩu không đúng'];
-        }
-
-        // Tự động nâng cấp mật khẩu cũ sang password_hash() BCRYPT
-        if ($needsRehash) {
-            $newSecureHash = password_hash($password, PASSWORD_BCRYPT);
-            $this->update($user['id'], ['mat_khau' => $newSecureHash]);
-        }
-        
-        // Lấy thông tin vai trò
-        $sql = "SELECT vt.ma_vai_tro, vt.ten_vai_tro 
-                FROM vai_tro vt 
-                WHERE vt.id = :vai_tro_id";
-        $vaiTro = $this->queryOne($sql, ['vai_tro_id' => $user['vai_tro_id']]);
-        
-        // Lấy profile_id tùy theo vai trò
-        $profileId = null;
-        switch ($vaiTro['ma_vai_tro']) {
-            case ROLE_GIANG_VIEN:
-                $profile = $this->queryOne("SELECT id FROM giang_vien WHERE nguoi_dung_id = :id", ['id' => $user['id']]);
-                $profileId = $profile['id'] ?? null;
-                break;
-            case ROLE_SINH_VIEN:
-                $profile = $this->queryOne("SELECT id FROM sinh_vien WHERE nguoi_dung_id = :id", ['id' => $user['id']]);
-                $profileId = $profile['id'] ?? null;
-                break;
-            case ROLE_LANH_DAO:
-                $profile = $this->queryOne("SELECT id FROM lanh_dao WHERE nguoi_dung_id = :id", ['id' => $user['id']]);
-                $profileId = $profile['id'] ?? null;
-                break;
-        }
-        
-        return [
-            'success' => true,
-            'user' => [
-                'id' => $user['id'],
-                'email' => $user['email'],
-                'ho_ten' => $user['ho_ten'],
-                'vai_tro' => $vaiTro['ma_vai_tro'],
-                'vai_tro_id' => $user['vai_tro_id'],
-                'ten_vai_tro' => $vaiTro['ten_vai_tro'],
-                'profile_id' => $profileId
-            ]
-        ];
+        $role = $this->queryOne('SELECT ma_vai_tro, ten_vai_tro FROM vai_tro WHERE id=?', [$user['vai_tro_id']]);
+        $tables = [ROLE_SINH_VIEN => 'sinh_vien', ROLE_GIANG_VIEN => 'giang_vien', ROLE_LANH_DAO => 'lanh_dao'];
+        if (!$role || !isset($tables[$role['ma_vai_tro']])) { return ['success' => false, 'message' => 'Tài khoản không hợp lệ.']; }
+        $profile = $this->queryOne('SELECT id FROM ' . $tables[$role['ma_vai_tro']] . ' WHERE nguoi_dung_id=?', [$user['id']]);
+        if (!$profile) { return ['success' => false, 'message' => 'Tài khoản chưa được cấp hồ sơ.']; }
+        return ['success' => true, 'user' => [
+            'id' => $user['id'], 'email' => $user['email'], 'ho_ten' => $user['ho_ten'],
+            'vai_tro' => $role['ma_vai_tro'], 'vai_tro_id' => $user['vai_tro_id'],
+            'ten_vai_tro' => $role['ten_vai_tro'], 'profile_id' => $profile['id'],
+            'auth_fingerprint' => accountSessionFingerprint($user)
+        ]];
     }
     
     /**
@@ -126,6 +72,9 @@ class NguoiDungModel extends BaseModel {
      * Đổi mật khẩu
      */
     public function changePassword($userId, $oldPassword, $newPassword) {
+        if ((int)$userId !== (int)($_SESSION['user_id'] ?? 0) || !is_string($newPassword) || strlen($newPassword)<PASSWORD_MIN_LENGTH || strlen($newPassword)>72) {
+            return ['success' => false, 'message' => 'Mật khẩu mới phải có 8–72 byte.'];
+        }
         $user = $this->findById($userId);
         
         if (!$user) {
@@ -133,7 +82,7 @@ class NguoiDungModel extends BaseModel {
         }
 
         // Kiểm tra mật khẩu cũ bằng password_verify() hoặc fallback
-        $oldMatch = password_verify($oldPassword, $user['mat_khau']) || ($user['mat_khau'] === md5($oldPassword)) || ($user['mat_khau'] === $oldPassword);
+        $oldMatch = verifyPassword($oldPassword, $user['mat_khau']);
         
         if (!$oldMatch) {
             return ['success' => false, 'message' => 'Mật khẩu cũ không đúng'];
@@ -223,60 +172,6 @@ class NguoiDungModel extends BaseModel {
      * Tạo người dùng OAuth
      */
     public function createOAuthUser($email, $hoTen, $provider) {
-        try {
-            // Kiểm tra người dùng đã tồn tại chưa
-            $existingUser = $this->findByEmail($email);
-            if ($existingUser) {
-                return [
-                    'success' => true,
-                    'user' => $existingUser,
-                    'message' => 'Người dùng đã tồn tại'
-                ];
-            }
-            
-            // Lấy vai trò mặc định (sinh viên)
-            require_once 'VaiTroModel.php';
-            $vaiTroModel = new VaiTroModel();
-            $defaultRole = $vaiTroModel->findByMa(ROLE_SINH_VIEN);
-            
-            if (!$defaultRole) {
-                return [
-                    'success' => false,
-                    'message' => 'Không tìm thấy vai trò mặc định'
-                ];
-            }
-            
-            // Tạo người dùng mới
-            $userId = $this->insert([
-                'email' => $email,
-                'ho_ten' => $hoTen,
-                'mat_khau' => hashPassword(bin2hex(random_bytes(16))), // Mật khẩu ngẫu nhiên
-                'vai_tro_id' => $defaultRole['id'],
-                'trang_thai' => 'active',
-                'oauth_provider' => $provider
-            ]);
-            
-            if (!$userId) {
-                return [
-                    'success' => false,
-                    'message' => 'Không thể tạo người dùng'
-                ];
-            }
-            
-            // Lấy thông tin người dùng vừa tạo
-            $newUser = $this->findById($userId);
-            
-            return [
-                'success' => true,
-                'user' => $newUser,
-                'message' => 'Tạo người dùng OAuth thành công'
-            ];
-            
-        } catch (Exception $e) {
-            return [
-                'success' => false,
-                'message' => 'Lỗi tạo người dùng OAuth: ' . $e->getMessage()
-            ];
-        }
+        throw new LogicException('OAuth account creation is disabled.');
     }
 }

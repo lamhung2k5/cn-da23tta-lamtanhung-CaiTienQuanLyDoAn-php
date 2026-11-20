@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * TRANG CHỦ - HỆ THỐNG QUẢN LÝ ĐỀ TÀI
  */
@@ -13,7 +13,7 @@ try {
 } catch (Exception $e) {
     $dsThongBao = [];
     $soThongBao = 0;
-    error_log("Database Error: " . $e->getMessage());
+    error_log("Database Error: " . safeError($e));
 }
 
 // Nếu đã đăng nhập, chuyển đến dashboard
@@ -37,6 +37,8 @@ if (isLoggedIn()) {
 <html lang="vi">
 
 <head>
+<meta name="csrf-token" content="<?= e(generateCSRF()) ?>">
+<script src="<?= e(BASE_URL) ?>assets/js/security.js"></script>
     <meta charset="UTF-8">
     <title>Hệ Thống Quản Lý Đề Tài</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -3310,13 +3312,13 @@ if (isLoggedIn()) {
         <div class="container mt-3">
             <?php if ($success): ?>
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle"></i> <?= $success ?>
+                    <i class="bi bi-check-circle"></i> <?= e($success) ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
             <?php if ($error): ?>
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-circle"></i> <?= $error ?>
+                    <i class="bi bi-exclamation-circle"></i> <?= e($error) ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
@@ -3362,7 +3364,7 @@ if (isLoggedIn()) {
                                             class="bi bi-journal-text me-2"></i>Danh sách đề tài</a></li>
                                 <?php $menuLinks = getMenuLinks(); ?>
                                 <?php if (!empty($menuLinks['ket_qua_thi'])): ?>
-                                    <li><a class="dropdown-item" href="<?= $menuLinks['ket_qua_thi'] ?>" target="_blank"><i
+                                    <li><a class="dropdown-item" href="<?= e($menuLinks['ket_qua_thi']) ?>" target="_blank"><i
                                                 class="bi bi-file-earmark-text me-2"></i>Kết quả thi</a></li>
                                 <?php endif; ?>
                             </ul>
@@ -3451,7 +3453,7 @@ if (isLoggedIn()) {
                     <div class="modern-notifications-card glass-card">
                         <div class="notifications-header">
                             <h2 class="notifications-title">Thông Báo Mới Nhất <span
-                                    class="notification-count"><?php echo $soThongBao; ?></span></h2>
+                                    class="notification-count"><?php echo e($soThongBao); ?></span></h2>
                         </div>
 
                         <div class="notifications-list-modern">
@@ -3496,7 +3498,7 @@ if (isLoggedIn()) {
                                     <!--<a href="#<?php //echo $link; ?>" class="notification-item-modern">-->
                             		<div class="notification-item-modern">
                                         <div class="notification-icon-modern <?php echo $isNew ? 'new-notification' : ''; ?>">
-                                            <i class="bi <?php echo $icon; ?>"></i>
+                                            <i class="bi <?php echo e($icon); ?>"></i>
                                         </div>
                                         <div class="notification-content-modern">
                                             <div class="notification-title-modern">
@@ -3511,7 +3513,7 @@ if (isLoggedIn()) {
                                                 <?php if (!empty($tb['ngay_bat_dau']) || !empty($tb['ngay_ket_thuc'])): ?>
                                                     <i class="bi bi-calendar-range me-1"></i>
                                                 <?php endif; ?>
-                                                <?php echo $dateRange; ?>
+                                                <?php echo e($dateRange); ?>
                                             </div>
                                         </div>
                                     <!--</a>-->
@@ -3766,13 +3768,13 @@ if (isLoggedIn()) {
             // Toggle dark mode
             if (html.getAttribute('data-theme') === 'dark') {
                 html.setAttribute('data-theme', 'light');
-                themeIcon.className = 'bi bi-moon-fill';
-                themeText.textContent = 'Dark';
+                if (themeIcon) themeIcon.className = 'bi bi-moon-fill';
+                if (themeText) themeText.textContent = 'Dark';
                 localStorage.setItem('theme', 'light');
             } else {
                 html.setAttribute('data-theme', 'dark');
-                themeIcon.className = 'bi bi-sun-fill';
-                themeText.textContent = 'Light';
+                if (themeIcon) themeIcon.className = 'bi bi-sun-fill';
+                if (themeText) themeText.textContent = 'Light';
                 localStorage.setItem('theme', 'dark');
             }
         }
@@ -3788,13 +3790,13 @@ if (isLoggedIn()) {
             if (!savedTheme) {
                 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                     html.setAttribute('data-theme', 'dark');
-                    themeIcon.className = 'bi bi-sun-fill';
-                    themeText.textContent = 'Light';
+                    if (themeIcon) themeIcon.className = 'bi bi-sun-fill';
+                    if (themeText) themeText.textContent = 'Light';
                 }
             } else if (savedTheme === 'dark') {
                 html.setAttribute('data-theme', 'dark');
-                themeIcon.className = 'bi bi-sun-fill';
-                themeText.textContent = 'Light';
+                if (themeIcon) themeIcon.className = 'bi bi-sun-fill';
+                if (themeText) themeText.textContent = 'Light';
             }
         });
     </script>

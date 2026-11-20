@@ -4,6 +4,7 @@
  */
 
 require_once '../bootstrap.php';
+requirePost();
 requireRole(ROLE_SINH_VIEN);
 
 $user = getCurrentUser();
@@ -15,7 +16,7 @@ $thongBaoModel = new ThongBaoModel();
 $sinhVien = $sinhVienModel->getByNguoiDungId($user['id']);
 
 // Lấy ID đề tài
-$deTaiId = (int)($_GET['id'] ?? 0);
+$deTaiId = (int)($_POST['id'] ?? 0);
 
 if (!$deTaiId) {
     setFlashMessage('error', 'Đề tài không tồn tại');

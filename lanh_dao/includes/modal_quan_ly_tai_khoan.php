@@ -21,7 +21,7 @@
 
                 <div id="alertContainer"></div>
 
-                <form method="POST" action="xu_ly_tao_nguoi_dung.php" id="createUserForm">
+                <form method="POST" action="xu_ly_tao_nguoi_dung.php" id="createUserForm"><?= csrf_field() ?><div class="mb-3"><label class="form-label">Mật khẩu hiện tại của Lãnh đạo (bắt buộc khi cấp thêm Lãnh đạo)</label><input class="form-control" type="password" name="current_password" autocomplete="current-password"></div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Vai trò <span class="text-danger">*</span></label>
