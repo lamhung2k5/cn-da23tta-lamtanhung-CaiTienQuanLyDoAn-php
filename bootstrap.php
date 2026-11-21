@@ -29,5 +29,8 @@ require_once __DIR__ . '/models/DangKyDeTaiModel.php';
 require_once __DIR__ . '/models/ThongBaoModel.php';
 require_once __DIR__ . '/models/ThongBaoDoAnModel.php';
 require_once __DIR__ . '/models/CaiDatModel.php';
+require_once __DIR__ . '/models/DeTaiQuanTamModel.php';
+require_once __DIR__ . '/helpers/DangKyThoiGian.php';
+require_once __DIR__ . '/helpers/DeTaiQuanTamService.php';
 
 initializeSecurity();

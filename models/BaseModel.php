@@ -12,7 +12,7 @@ class BaseModel {
     protected function validateTable($table) {
         $tables = ['nguoi_dung','vai_tro','sinh_vien','giang_vien','lanh_dao','de_tai','dang_ky_de_tai',
             'thong_bao','thong_bao_do_an_content','thong_bao_do_an_notice','thong_bao_do_an_timeline',
-            'cai_dat','lich_su_duyet_de_tai'];
+            'cai_dat','lich_su_duyet_de_tai','de_tai_quan_tam'];
         if (!in_array($table, $tables, true)) { throw new InvalidArgumentException('Unknown model table.'); }
         return $table;
     }

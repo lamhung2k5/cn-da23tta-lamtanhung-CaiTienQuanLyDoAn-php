@@ -63,6 +63,7 @@ include_once __DIR__ . '/../includes/header.php';
                 <a class="nav-link active" href="de_tai_cua_toi.php">
                     <i class="bi bi-bookmark-check"></i> Đề tài của tôi
                 </a>
+            <?php include __DIR__ . '/includes/quan_tam_sidebar.php'; ?>
             </nav>
         </div>
 

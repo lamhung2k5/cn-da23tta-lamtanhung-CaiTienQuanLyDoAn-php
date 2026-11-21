@@ -32,10 +32,28 @@ if (!in_array($loaiDeTai, ['co_so_nganh', 'chuyen_nganh'])) {
 $filters['he_dao_tao'] = $loaiDeTai;
 
 // Xử lý search
-$search = isset($_GET['search']) ? trim($_GET['search']) : '';
-if ($search !== '') {
-    $filters['search'] = sanitize($search);
+$search = is_string($_GET['search'] ?? null) ? trim($_GET['search']) : '';
+$teacherOptions = [];
+$technologyOptions = [];
+foreach ($deTaiModel->getDeTaiDaDuyet($filters) as $topic) {
+    $teacherOptions[(int)$topic['giang_vien_id']] = $topic['ten_giang_vien'];
+    $technologyOptions += DeTaiModel::technologyTokens($topic['cong_nghe'] ?? '');
 }
+asort($teacherOptions, SORT_NATURAL | SORT_FLAG_CASE);
+asort($technologyOptions, SORT_NATURAL | SORT_FLAG_CASE);
+$technology = is_string($_GET['cong_nghe'] ?? null) ? DeTaiModel::normalizeTechnology($_GET['cong_nghe']) : '';
+if (!array_key_exists($technology, $technologyOptions)) { $technology = ''; }
+$teacherId = filter_var($_GET['giang_vien'] ?? null, FILTER_VALIDATE_INT) ?: 0;
+if (!isset($teacherOptions[$teacherId])) { $teacherId = 0; }
+$followed = is_string($_GET['quan_tam'] ?? null) && in_array($_GET['quan_tam'], ['saved', 'unsaved'], true) ? $_GET['quan_tam'] : '';
+$sort = is_string($_GET['sap_xep'] ?? null) && in_array($_GET['sap_xep'], ['newest', 'oldest', 'title'], true) ? $_GET['sap_xep'] : 'newest';
+$filters += ['title_teacher_only'=>true, 'giang_vien_id'=>$teacherId, 'followed'=>$followed, 'student_id'=>(int)$sinhVien['id'], 'sort'=>$sort, 'technology'=>$technology];
+if ($search !== '') {
+    $filters['search'] = $search;
+}
+$tabQuery = ['search'=>$search, 'giang_vien'=>$teacherId ?: '', 'quan_tam'=>$followed, 'sap_xep'=>$sort, 'cong_nghe'=>$technology];
+$tabQuery = array_filter($tabQuery, static function ($value) { return $value !== ''; });
+$tabUrl = static function ($type) use ($tabQuery) { return '?' . http_build_query(['loai'=>$type] + $tabQuery); };
 
 $danhSachDeTai = $deTaiModel->getDeTaiDaDuyet($filters);
 
@@ -53,6 +71,11 @@ foreach ($danhSachDeTai as $dt) {
 
 // Gộp lại: đề tài còn chỗ lên trên, đề tài đã đủ xuống dưới
 $danhSachDeTai = array_merge($deTaiConCho, $deTaiDaDu);
+
+$quanTamModel = new DeTaiQuanTamModel();
+$quanTamSavedMap = $quanTamModel->savedMap($sinhVien['id']);
+$registrationContext = $quanTamModel->registrationContext($sinhVien['id']);
+$registrationWindow = new DangKyThoiGian();
 
 // Include header
 include_once __DIR__ . '/../includes/header.php';
@@ -235,6 +258,7 @@ include_once __DIR__ . '/../includes/header.php';
                 <a class="nav-link" href="de_tai_cua_toi.php">
                     <i class="bi bi-bookmark-check"></i> Đề tài của tôi
                 </a>
+            <?php include __DIR__ . '/includes/quan_tam_sidebar.php'; ?>
             </nav>
         </div>
 
@@ -250,34 +274,7 @@ include_once __DIR__ . '/../includes/header.php';
                         </div>
                     </div>
                     
-                    <!-- Form tìm kiếm -->
-                    <div class="row">
-                        <div class="col-md-8">
-                            <form method="GET" action="" id="filterForm">
-                                <input type="hidden" name="loai" value="<?= e($loaiDeTai) ?>">
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white">
-                                        <i class="bi bi-search"></i>
-                                    </span>
-                                    <input type="text" name="search" class="form-control" 
-                                           placeholder="Nhập tên đề tài hoặc tên giảng viên..."
-                                           value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
-                                    <?php if (!empty($search)): ?>
-                                        <a href="?loai=<?= e($loaiDeTai) ?>" class="btn btn-danger" title="Xóa tìm kiếm">
-                                            <i class="bi bi-x-lg"></i>
-                                        </a>
-                                    <?php endif; ?>
-                                </div>
-                                <?php if (!empty($search)): ?>
-                                    <div class="mt-2">
-                                        <small class="text-muted">
-                                            Tìm thấy <strong><?= count($danhSachDeTai) ?></strong> kết quả cho "<strong><?= htmlspecialchars($search) ?></strong>"
-                                        </small>
-                                    </div>
-                                <?php endif; ?>
-                            </form>
-                        </div>
-                    </div>
+
                 </div>
             </div>
 
@@ -286,7 +283,7 @@ include_once __DIR__ . '/../includes/header.php';
                 <ul class="nav nav-tabs nav-justified custom-tabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <a class="nav-link <?= $loaiDeTai === 'co_so_nganh' ? 'active' : '' ?>" 
-                           href="?loai=co_so_nganh<?= !empty($search) ? '&search=' . urlencode($search) : '' ?>">
+                           href="<?= e($tabUrl('co_so_nganh')) ?>">
                             <i class="bi bi-journal-code"></i> 
                             <span class="tab-text">Cơ sở ngành</span>
                             <?php if ($daDuCSN): ?>
@@ -296,7 +293,7 @@ include_once __DIR__ . '/../includes/header.php';
                     </li>
                     <li class="nav-item" role="presentation">
                         <a class="nav-link <?= $loaiDeTai === 'chuyen_nganh' ? 'active' : '' ?>" 
-                           href="?loai=chuyen_nganh<?= !empty($search) ? '&search=' . urlencode($search) : '' ?>">
+                           href="<?= e($tabUrl('chuyen_nganh')) ?>">
                             <i class="bi bi-mortarboard"></i> 
                             <span class="tab-text">Chuyên ngành</span>
                             <?php if ($daDuCN): ?>
@@ -307,6 +304,60 @@ include_once __DIR__ . '/../includes/header.php';
                 </ul>
             </div>
 
+            <div class="card compact-search-card mb-4">
+                <div class="card-body">
+                    <form method="GET" id="filterForm" class="row g-3 align-items-end">
+                        <input type="hidden" name="loai" value="<?= e($loaiDeTai) ?>">
+                        <div class="col-12 col-lg-6">
+                            <label for="topic-search" class="form-label">Tìm kiếm đề tài</label>
+                            <input id="topic-search" type="search" name="search" class="form-control" placeholder="Nhập tên đề tài hoặc tên giảng viên…" value="<?= e($search) ?>">
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <label for="topic-teacher" class="form-label">Giảng viên hướng dẫn</label>
+                            <select id="topic-teacher" name="giang_vien" class="form-select">
+                                <option value="">Tất cả giảng viên</option>
+                                <?php foreach ($teacherOptions as $id=>$name): ?>
+                                    <option value="<?= (int)$id ?>" <?= $teacherId === $id ? 'selected' : '' ?>><?= e($name) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <label for="topic-technology" class="form-label">Công nghệ sử dụng</label>
+                            <select id="topic-technology" name="cong_nghe" class="form-select" <?= !$technologyOptions ? 'aria-describedby="technology-help"' : '' ?>>
+                                <option value="">Tất cả công nghệ</option>
+                                <?php foreach ($technologyOptions as $key=>$label): ?>
+                                    <option value="<?= e($key) ?>" <?= $technology === (string)$key ? 'selected' : '' ?>><?= e($label) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <?php if (!$technologyOptions): ?>
+                                <div id="technology-help" class="form-text">Chưa có dữ liệu công nghệ trong hệ này.</div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <label for="topic-followed" class="form-label">Quan tâm</label>
+                            <select id="topic-followed" name="quan_tam" class="form-select">
+                                <option value="">Tất cả</option>
+                                <option value="saved" <?= $followed === 'saved' ? 'selected' : '' ?>>Đã quan tâm</option>
+                                <option value="unsaved" <?= $followed === 'unsaved' ? 'selected' : '' ?>>Chưa quan tâm</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <label for="topic-sort" class="form-label">Sắp xếp</label>
+                            <select id="topic-sort" name="sap_xep" class="form-select">
+                                <option value="newest" <?= $sort === 'newest' ? 'selected' : '' ?>>Mới nhất</option>
+                                <option value="oldest" <?= $sort === 'oldest' ? 'selected' : '' ?>>Cũ nhất</option>
+                                <option value="title" <?= $sort === 'title' ? 'selected' : '' ?>>Tên đề tài A–Z</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6 d-flex flex-wrap gap-2">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>Tìm kiếm</button>
+                            <a class="btn btn-outline-secondary" href="?loai=<?= e($loaiDeTai) ?>">Xóa bộ lọc</a>
+                        </div>
+                    </form>
+                    <p class="text-muted small mt-3 mb-0" role="status">Tìm thấy <strong><?= count($danhSachDeTai) ?></strong> đề tài <?= e(getHeDaoTaoLabel($loaiDeTai)) ?><?= $search !== '' ? ' cho từ khóa “' . e($search) . '”' : '' ?>.</p>
+                </div>
+            </div>
+
             <!-- Danh sách đề tài -->
             <div class="row">
                 <?php if (empty($danhSachDeTai)): ?>
@@ -314,7 +365,7 @@ include_once __DIR__ . '/../includes/header.php';
                         <div class="card shadow-sm">
                             <div class="card-body text-center py-5">
                                 <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
-                                <p class="text-muted mt-3">Không tìm thấy đề tài nào</p>
+                                <p class="text-muted mt-3">Không tìm thấy đề tài phù hợp. Hãy đổi từ khóa hoặc xóa bộ lọc.</p>
                             </div>
                         </div>
                     </div>
@@ -389,63 +440,21 @@ include_once __DIR__ . '/../includes/header.php';
                                     <?php endif; ?>
                                 </div>
                                 
-                                <!-- Footer -->
+                                <!-- Footer: keep the existing registration controls; add the follow action. -->
                                 <div class="card-footer bg-light border-0">
-                                    <div class="d-grid gap-2">
-                                        <?php if ($dt['con_lai'] <= 0): ?>
-                                        <?php else: ?>
-                                            <!-- Đề tài còn chỗ - hiển thị nút bình thường -->
-                                            <div class="d-flex justify-content-center gap-2">
-                                                <a href="chi_tiet_de_tai.php?id=<?= e($dt['id']) ?>"
-                                                   class="btn btn-ocean btn-sm">
-                                                    <i class="bi bi-eye-fill me-2"></i>Xem chi tiết
-                                                </a>
-                                                <?php 
-                                                // Kiểm tra điều kiện đăng ký theo hệ
-                                                $khongTheDangKy = false;
-                                                $lyDo = '';
-                                                
-                                                if ($loaiDeTai === 'co_so_nganh' && $daDuCSN) {
-                                                    $khongTheDangKy = true;
-                                                    $lyDo = 'Bạn đã có đề tài Cơ sở ngành được duyệt, không thể đăng ký đề tài này';
-                                                } elseif ($loaiDeTai === 'chuyen_nganh' && $daDuCN) {
-                                                    $khongTheDangKy = true;
-                                                    $lyDo = 'Bạn đã có đề tài Chuyên ngành được duyệt, không thể đăng ký đề tài này';
-                                                }
-                                                ?>
-                                                
-                                                <?php 
-                                                //Cài đặt thời hạn đăng ký đề tài
-                                                $openTime = strtotime('2026-09-22 07:00:00');
-                                                $closeTime = strtotime('2026-09-23 23:59:59');
-                                                if ($loaiDeTai == 'chuyen_nganh')
-                                                {
-                                                    $openTime = strtotime('2026-09-24 07:00:00');
-                                                    $closeTime = strtotime('2026-09-25 23:59:59');
-                                                }
-                                                $currentTime = time();
-
-                                                if ($currentTime < $openTime) {
-                                                    $lyDo = "Chưa đến ngày đăng ký";
-                                                }
-                                                
-                                                if ($currentTime > $closeTime) {
-                                                    $lyDo = "Đã quá hạn đăng ký";
-                                                }
-                                                
-                                                if (($khongTheDangKy) || ($currentTime < $openTime) || ($currentTime > $closeTime)): ?>
-                                                    <button class="btn btn-danger btn-sm" title="<?= e($lyDo) ?>">
-                                                        <i class="bi bi-lock-fill me-1"></i>Đăng ký ngay
-                                                    </button>
-                                                <?php else: ?>
-                                                    <a href="dang_ky_de_tai.php?id=<?= e($dt['id']) ?>"
-                                                       class="btn btn-danger btn-sm"
-                                                       onclick="return confirm('Bạn có chắc muốn đăng ký đề tài này?')">
-                                                        <i class="bi bi-bookmark-plus-fill me-1"></i>Đăng ký ngay
-                                                    </a>
-                                                <?php endif; ?>
-                                            </div>
-                                        <?php endif; ?>
+                                    <?php
+                                    $quanTamTopicId = (int)$dt['id'];
+                                    $quanTamSavedId = $quanTamSavedMap[$quanTamTopicId] ?? null;
+                                    $quanTamReturn = 'list';
+                                    $quanTamType = $loaiDeTai;
+                                    $registrationTopicId = $quanTamTopicId;
+                                    $registrationReturn = 'list';
+                                    $registrationState = DeTaiQuanTamService::registrationState($dt, $registrationContext, $registrationWindow);
+                                    ?>
+                                    <div class="d-flex flex-wrap justify-content-center gap-2 align-items-center">
+                                        <a href="chi_tiet_de_tai.php?id=<?= (int)$dt['id'] ?>" class="btn btn-ocean btn-sm"><i class="bi bi-eye-fill me-1"></i>Xem chi tiết</a>
+                                        <?php include __DIR__ . '/includes/quan_tam_button.php'; ?>
+                                        <?php include __DIR__ . '/includes/dang_ky_button.php'; ?>
                                     </div>
                                 </div>
                             </div>
@@ -459,30 +468,6 @@ include_once __DIR__ . '/../includes/header.php';
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-// Auto search với debounce
-let searchTimeout;
-const searchInput = document.querySelector('input[name="search"]');
-const filterForm = document.getElementById('filterForm');
 
-if (searchInput) {
-    searchInput.addEventListener('input', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(function() {
-            filterForm.submit();
-        }, 500); // Đợi 500ms sau khi người dùng ngừng gõ
-    });
-}
-
-// Xóa các tham số rỗng trước khi submit form
-filterForm.addEventListener('submit', function(e) {
-    const inputs = this.querySelectorAll('input[name], select[name]');
-    inputs.forEach(input => {
-        if (input.value === '' || input.value === null) {
-            input.removeAttribute('name');
-        }
-    });
-});
-</script>
 </body>
 </html>

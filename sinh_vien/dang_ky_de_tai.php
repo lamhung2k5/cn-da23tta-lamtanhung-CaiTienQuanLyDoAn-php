@@ -1,84 +1,29 @@
 <?php
-/**
- * ĐĂNG KÝ ĐỀ TÀI
- */
-
-require_once '../bootstrap.php';
-requirePost();
+require_once __DIR__ . '/../bootstrap.php';
 requireRole(ROLE_SINH_VIEN);
-
+requirePost();
 $user = getCurrentUser();
-$sinhVienModel = new SinhVienModel();
-$deTaiModel = new DeTaiModel();
-$dangKyModel = new DangKyDeTaiModel();
-$thongBaoModel = new ThongBaoModel();
-
-$sinhVien = $sinhVienModel->getByNguoiDungId($user['id']);
-
-// Lấy ID đề tài
-$deTaiId = (int)($_POST['id'] ?? 0);
-
-if (!$deTaiId) {
-    setFlashMessage('error', 'Đề tài không tồn tại');
-    redirect('sinh_vien/danh_sach_de_tai.php');
+$student = (new SinhVienModel())->getByNguoiDungId($user['id']);
+if (!$student) { securityDeny(403, 'Không tìm thấy hồ sơ Sinh viên.'); }
+$topicId = filter_var($_POST['id'] ?? null, FILTER_VALIDATE_INT);
+$topic = $topicId > 0 ? (new DeTaiModel())->findById($topicId) : null;
+if (!$topic) {
+    $result = ['success'=>false,'message'=>'Đề tài không tồn tại.'];
+} else {
+    // The model checks ownership, registration window and capacity inside its transaction.
+    $result = (new DangKyDeTaiModel())->dangKyDeTai($student['id'], $topicId);
 }
-
-$deTai = $deTaiModel->findById($deTaiId);
-
-if (!$deTai || $deTai['trang_thai'] !== 'da_duyet') {
-    setFlashMessage('error', 'Đề tài không tồn tại hoặc chưa được duyệt');
-    redirect('sinh_vien/danh_sach_de_tai.php');
-}
-
-// Kiểm tra sinh viên đã đủ số lượng đề tài đã duyệt chưa (1 CSN + 1 CN)
-if ($sinhVienModel->daDuSoLuongDeTai($sinhVien['id'])) {
-    setFlashMessage('error', 'Bạn đã đủ số lượng đề tài (1 Cơ sở ngành + 1 Chuyên ngành đã được duyệt). Không thể đăng ký thêm.');
-    redirect('sinh_vien/de_tai_cua_toi.php');
-}
-
-// Kiểm tra còn chỗ không - Kiểm tra giới hạn sinh viên của giảng viên
-$db = Database::getInstance()->getConnection();
-$giangVienModel = new GiangVienModel();
-$giangVien = $giangVienModel->findById($deTai['giang_vien_id']);
-
-// Lấy giới hạn sinh viên theo loại đề tài
-$columnName = $deTai['he_dao_tao'] === 'co_so_nganh' ? 'gioi_han_sv_csn' : 'gioi_han_sv_cn';
-$gioiHanSV = $giangVien[$columnName] ?? 10;
-
-// Đếm số sinh viên đã đăng ký với giảng viên này (theo loại đề tài)
-$stmt = $db->prepare("SELECT COUNT(DISTINCT dk.sinh_vien_id) as total
-    FROM dang_ky_de_tai dk
-    JOIN de_tai dt ON dk.de_tai_id = dt.id
-    WHERE dt.giang_vien_id = :giang_vien_id 
-    AND dt.he_dao_tao = :he_dao_tao
-    AND dk.trang_thai = 'da_duyet'");
-$stmt->execute([
-    'giang_vien_id' => $deTai['giang_vien_id'],
-    'he_dao_tao' => $deTai['he_dao_tao']
-]);
-$result = $stmt->fetch();
-$soSinhVienDaDangKy = $result['total'] ?? 0;
-
-if ($soSinhVienDaDangKy >= $gioiHanSV) {
-    $loaiDeTaiText = $deTai['he_dao_tao'] === 'co_so_nganh' ? 'Cơ sở ngành' : 'Chuyên ngành';
-    setFlashMessage('error', "Giảng viên đã đủ số lượng sinh viên hướng dẫn ({$loaiDeTaiText}). Vui lòng đăng ký đề tài của giảng viên khác.");
-    redirect('sinh_vien/danh_sach_de_tai.php');
-}
-
-// Đăng ký
-$result = $dangKyModel->dangKyDeTai($sinhVien['id'], $deTaiId);
-
 if ($result['success']) {
-    // Gửi thông báo cho giảng viên
-    $thongBaoModel->thongBaoSinhVienDangKy(
-        $deTai['giang_vien_id'], 
-        $user['ho_ten'], 
-        $deTai['tieu_de']
-    );
-    
+    try { (new ThongBaoModel())->thongBaoSinhVienDangKy($topic['giang_vien_id'], $user['ho_ten'], $topic['tieu_de']); }
+    catch (Throwable $error) { safeError($error); } // A notification failure must not undo a confirmed registration.
     setFlashMessage('success', $result['message']);
     redirect('sinh_vien/de_tai_cua_toi.php');
-} else {
-    setFlashMessage('error', $result['message']);
-    redirect('sinh_vien/danh_sach_de_tai.php');
 }
+setFlashMessage('error', $result['message']);
+if (($_POST['return_to'] ?? '') === 'followed') {
+    $filter = in_array($_POST['filter'] ?? '', ['co_so_nganh','chuyen_nganh'], true) ? '?loai=' . $_POST['filter'] : '';
+    redirect('sinh_vien/de_tai_quan_tam.php' . $filter);
+}
+if (($_POST['return_to'] ?? '') === 'detail' && $topicId > 0) { redirect('sinh_vien/chi_tiet_de_tai.php?id=' . $topicId); }
+$type = $topic && $topic['he_dao_tao'] === 'chuyen_nganh' ? 'chuyen_nganh' : 'co_so_nganh';
+redirect('sinh_vien/danh_sach_de_tai.php?loai=' . $type);

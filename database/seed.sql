@@ -37,4 +37,12 @@ INSERT INTO thong_bao_do_an_notice (tieu_de, noi_dung, trang_thai) VALUES
 ('Lưu ý mẫu', 'Chỉ dùng cho kiểm tra trên localhost.', 'mo');
 INSERT INTO thong_bao_do_an_timeline (loai, thu_tu, tieu_de, noi_dung, ngay, thang, nam, trang_thai) VALUES
 ('dang_ky', 1, 'Mốc đăng ký mẫu', 'Mốc thời gian giả lập.', 20, 11, 2026, 'mo');
+INSERT IGNORE INTO cai_dat (key_name, value, mo_ta) VALUES
+('gioi_han_de_tai_quan_tam', '6', 'Số đề tài quan tâm tối đa mỗi sinh viên, chung hai hệ'),
+('cho_phep_dang_ky', '1', 'Cho phép đăng ký trong các khoảng thời gian đã cấu hình'),
+('dang_ky_csn_bat_dau', '2026-09-22 07:00:00', 'Mở đăng ký Cơ sở ngành'),
+('dang_ky_csn_ket_thuc', '2026-12-23 23:59:59', 'Đóng đăng ký Cơ sở ngành'),
+('dang_ky_cn_bat_dau', '2026-09-24 07:00:00', 'Mở đăng ký Chuyên ngành'),
+('dang_ky_cn_ket_thuc', '2026-12-25 23:59:59', 'Đóng đăng ký Chuyên ngành');
+
 COMMIT;

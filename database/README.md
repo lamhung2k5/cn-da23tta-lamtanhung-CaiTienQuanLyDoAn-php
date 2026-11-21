@@ -51,3 +51,9 @@ Kết quả và các giới hạn nằm trong `bao_tri/ket_qua_buoc_0.md`. Datab
 Bản dump riêng trước bảo trì nằm tại `storage/backups/qldt_database-before-maintenance-2026-11-20.sql` trên máy hiện tại. Toàn bộ thư mục này bị Git bỏ qua và Apache từ chối truy cập web. Không upload bản dump chứa dữ liệu thật lên GitHub. File dump đã tạo thành công; chưa thực hiện diễn tập phục hồi toàn bộ bản dump riêng.
 
 `.htaccess` trong `database/` chặn tải schema/seed trực tiếp qua Apache. Chỉ import qua CLI hoặc phpMyAdmin.
+
+## Cập nhật Đề tài quan tâm (migration 002)
+
+Bộ schema/seed mới đã có bảng và cấu hình quan tâm. Với database có sẵn, sao lưu rồi import `database/migrations/002_de_tai_quan_tam.sql` vào đúng database; hoặc chạy `php database/apply_002.php` theo cấu hình cục bộ đang chọn. Áp dụng migration trước khi mở trang Sinh viên trên database đó. Migration không xóa dữ liệu và không ghi đè cài đặt đã có.
+
+Máy hiện tại đã áp dụng cho `qldt_demo`; chưa áp dụng cho database thật `qldt_database`. Lịch đăng ký và giới hạn xem tại Lãnh đạo → Cài đặt thông số → Đăng ký đề tài. Báo cáo: `bao_cao/sinhvien/01_de_tai_quan_tam.md`.

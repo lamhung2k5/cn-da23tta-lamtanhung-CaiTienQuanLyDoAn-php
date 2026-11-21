@@ -29,10 +29,11 @@ if (!$deTaiId) {
 
 // Lấy thông tin đề tài
 $sql = "SELECT dt.*, 
-               gv.ma_giang_vien,
+               gv.ma_giang_vien, gv.gioi_han_sv_csn, gv.gioi_han_sv_cn,
+               (SELECT COUNT(DISTINCT r.sinh_vien_id) FROM dang_ky_de_tai r JOIN de_tai x ON x.id=r.de_tai_id WHERE x.giang_vien_id=dt.giang_vien_id AND x.he_dao_tao=dt.he_dao_tao AND r.trang_thai='da_duyet') AS so_sv_gv,
                nd.ho_ten as ten_giang_vien,
                nd.email as email_giang_vien,
-               (dt.so_luong_sv - dt.so_luong_da_dang_ky) as con_lai
+               (dt.so_luong_sv - (SELECT COUNT(*) FROM dang_ky_de_tai r WHERE r.de_tai_id=dt.id AND r.trang_thai='da_duyet')) as con_lai
         FROM de_tai dt
         JOIN giang_vien gv ON dt.giang_vien_id = gv.id
         JOIN nguoi_dung nd ON gv.nguoi_dung_id = nd.id
@@ -53,6 +54,12 @@ $dangKy = $dangKyModel->findOneBy([
     'de_tai_id' => $deTaiId
 ]);
 
+$quanTamModel = new DeTaiQuanTamModel();
+$quanTamSavedMap = $quanTamModel->savedMap($sinhVien['id']);
+$registrationContext = $quanTamModel->registrationContext($sinhVien['id']);
+$registrationWindow = new DangKyThoiGian();
+
+$registrationState = DeTaiQuanTamService::registrationState($deTai, $registrationContext, $registrationWindow);
 // Include header
 include_once __DIR__ . '/../includes/header.php';
 ?>
@@ -295,6 +302,7 @@ include_once __DIR__ . '/../includes/header.php';
                 <a class="nav-link" href="de_tai_cua_toi.php">
                     <i class="bi bi-bookmark-check"></i> Đề tài của tôi
                 </a>
+            <?php include __DIR__ . '/includes/quan_tam_sidebar.php'; ?>
             </nav>
         </div>
 
@@ -405,6 +413,14 @@ include_once __DIR__ . '/../includes/header.php';
 
                         <!-- Action Section -->
                         <div class="action-section">
+                            <?php if ($deTai['trang_thai'] === STATUS_DA_DUYET):
+    $quanTamTopicId = (int)$deTai['id'];
+    $quanTamSavedId = $quanTamSavedMap[$quanTamTopicId] ?? null;
+    $quanTamReturn = 'detail';
+    $quanTamType = $deTai['he_dao_tao'];
+?>
+    <div class="mb-3"><?php include __DIR__ . '/includes/quan_tam_button.php'; ?></div>
+<?php endif; ?>
                             <?php if ($dangKy): ?>
                                 <!-- Đã đăng ký -->
                                 <div class="status-alert success">
@@ -441,8 +457,8 @@ include_once __DIR__ . '/../includes/header.php';
                             <?php else: ?>
                                 <!-- Kiểm tra điều kiện đăng ký -->
                                 <?php 
-                                $khongTheDangKy = false;
-                                $lyDo = '';
+                                $khongTheDangKy = !$registrationState['can_register'];
+                                $lyDo = $registrationState['label'] . '. ' . $registrationState['description'];
                                 
                                 if ($deTai['he_dao_tao'] === 'co_so_nganh' && $daDuCSN) {
                                     $khongTheDangKy = true;

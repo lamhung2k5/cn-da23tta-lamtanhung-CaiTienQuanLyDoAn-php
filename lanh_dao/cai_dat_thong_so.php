@@ -193,12 +193,16 @@ include_once __DIR__ . '/../includes/header.php';
                                 Kế hoạch số
                             </button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-dang-ky" data-bs-toggle="tab" data-bs-target="#content-dang-ky" type="button" role="tab">Đăng ký đề tài</button>
+                        </li>
                     </ul>
                 </div>
 
                 <!-- Tabs Content -->
                 <div class="card-body p-0">
                     <div class="tab-content">
+                        <?php include __DIR__ . '/includes/cai_dat_dang_ky.php'; ?>
                         <!-- Tab 1: Giới hạn đề tài -->
                         <div class="tab-pane fade show active" id="content-gioi-han" role="tabpanel">
                             <div class="p-4">
@@ -283,7 +287,10 @@ include_once __DIR__ . '/../includes/header.php';
                                             trạng thái "chờ duyệt" và "đã duyệt").</li>
                                         <li>Không thể giảm số lượng xuống thấp hơn số sinh viên đã đăng ký để tránh xung
                                             đột dữ liệu.</li>
-                                    </ul>
+                                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-dang-ky" data-bs-toggle="tab" data-bs-target="#content-dang-ky" type="button" role="tab">Đăng ký đề tài</button>
+                        </li>
+                    </ul>
                                 </div>
                             </div>
                         </div>
@@ -941,3 +948,10 @@ include_once __DIR__ . '/../includes/header.php';
 </body>
 
 </html>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (window.location.hash === '#tab-dang-ky') {
+        bootstrap.Tab.getOrCreateInstance(document.getElementById('tab-dang-ky')).show();
+    }
+});
+</script>

@@ -47,6 +47,8 @@ trait RegistrationWorkflow {
             }
             $registrationSetting = (new CaiDatModel())->getByKey('cho_phep_dang_ky');
             if ($registrationSetting && $registrationSetting['value'] === '0') { throw new DomainException('Đợt đăng ký đang đóng.'); }
+            $window = (new DangKyThoiGian())->status($topic['he_dao_tao']);
+            if (!$window['can_register']) { throw new DomainException($window['label'] . '. ' . $window['description']); }
             $this->checkRegistrationCapacity($sinhVienId, $topic, $lecturer);
             if ($this->findOneBy(['sinh_vien_id' => $sinhVienId, 'de_tai_id' => $deTaiId])) {
                 throw new DomainException('Bạn đã đăng ký đề tài này.');
@@ -55,7 +57,7 @@ trait RegistrationWorkflow {
                 'trang_thai' => STATUS_DA_DUYET, 'ngay_duyet' => date('Y-m-d H:i:s')]);
             $this->synchronizeRegistrationCount($deTaiId);
             $this->db->commit();
-            return ['success' => true, 'message' => 'Đăng ký thành công. Đề tài đã được xác nhận.'];
+            return ['success' => true, 'message' => 'Đăng ký đề tài thành công.'];
         } catch (Throwable $error) { return $this->registrationError($error); }
     }
 

@@ -11,5 +11,8 @@ $pdo->exec("USE `$name`");
 foreach (['schema.sql', 'seed.sql'] as $file) {
     $pdo->exec(file_get_contents($root . '/database/' . $file));
 }
+// The security suite tests capacity/auth independently of today's application calendar.
+$pdo->exec("UPDATE cai_dat SET value='2000-01-01 00:00:00' WHERE key_name IN ('dang_ky_csn_bat_dau','dang_ky_cn_bat_dau')");
+$pdo->exec("UPDATE cai_dat SET value='2100-01-01 00:00:00' WHERE key_name IN ('dang_ky_csn_ket_thuc','dang_ky_cn_ket_thuc')");
 echo 'Imported schema and synthetic seed into ' . $name . PHP_EOL;
 echo 'Tables: ' . $pdo->query('SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE()')->fetchColumn() . PHP_EOL;

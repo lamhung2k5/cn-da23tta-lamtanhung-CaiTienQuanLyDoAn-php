@@ -256,3 +256,17 @@ CREATE TABLE `vai_tro` (
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+CREATE TABLE IF NOT EXISTS de_tai_quan_tam (
+    id INT NOT NULL AUTO_INCREMENT,
+    sinh_vien_id INT NOT NULL,
+    de_tai_id INT NULL,
+    tieu_de_da_luu VARCHAR(500) NOT NULL,
+    he_dao_tao_da_luu ENUM('co_so_nganh','chuyen_nganh') NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_quan_tam_sinh_vien_de_tai (sinh_vien_id, de_tai_id),
+    KEY idx_quan_tam_de_tai (de_tai_id),
+    CONSTRAINT fk_quan_tam_sinh_vien FOREIGN KEY (sinh_vien_id) REFERENCES sinh_vien(id) ON DELETE CASCADE,
+    CONSTRAINT fk_quan_tam_de_tai FOREIGN KEY (de_tai_id) REFERENCES de_tai(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

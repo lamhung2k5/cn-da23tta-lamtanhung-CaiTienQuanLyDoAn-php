@@ -1,0 +1,15 @@
+/* Scoped to the followed-topics page; shared layouts keep their current styling. */
+@media (min-width: 769px) {
+    .followed-page .sidebar {
+        top: var(--followed-navbar-height, 76px);
+        height: calc(100vh - var(--followed-navbar-height, 76px));
+        min-height: 0;
+    }
+    .followed-page footer {
+        margin-left: 16.666667%;
+        width: 83.333333%;
+    }
+}
+@media (max-width: 768px) {
+    .followed-page .sidebar { top: 0; height: auto; min-height: 0; }
+}

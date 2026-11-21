@@ -218,14 +218,15 @@ class DeTaiModel extends BaseModel {
      */
     public function getDeTaiDaDuyet($filters = []) {
         $sql = "SELECT dt.*, 
-                       gv.ma_giang_vien,
+                       gv.ma_giang_vien, gv.gioi_han_sv_csn, gv.gioi_han_sv_cn,
+                       (SELECT COUNT(DISTINCT r.sinh_vien_id) FROM dang_ky_de_tai r JOIN de_tai x ON x.id=r.de_tai_id WHERE x.giang_vien_id=dt.giang_vien_id AND x.he_dao_tao=dt.he_dao_tao AND r.trang_thai='da_duyet') AS so_sv_gv,
                        nd.ho_ten as ten_giang_vien,
-                       (dt.so_luong_sv - dt.so_luong_da_dang_ky) as con_lai
+                       (dt.so_luong_sv - (SELECT COUNT(*) FROM dang_ky_de_tai r WHERE r.de_tai_id=dt.id AND r.trang_thai='da_duyet')) as con_lai
                 FROM de_tai dt
                 JOIN giang_vien gv ON dt.giang_vien_id = gv.id
                 JOIN nguoi_dung nd ON gv.nguoi_dung_id = nd.id
                 WHERE dt.trang_thai = 'da_duyet'
-                AND dt.so_luong_da_dang_ky < dt.so_luong_sv";
+                AND (SELECT COUNT(*) FROM dang_ky_de_tai r WHERE r.de_tai_id=dt.id AND r.trang_thai='da_duyet') < dt.so_luong_sv";
         
         $params = [];
         
@@ -236,15 +237,50 @@ class DeTaiModel extends BaseModel {
         
         if (!empty($filters['search'])) {
             $searchValue = '%' . $filters['search'] . '%';
-            $sql .= " AND (dt.tieu_de LIKE :search1 OR dt.mo_ta LIKE :search2 OR nd.ho_ten LIKE :search3)";
+            $sql .= !empty($filters['title_teacher_only'])
+                ? " AND (dt.tieu_de LIKE :search1 OR nd.ho_ten LIKE :search3)"
+                : " AND (dt.tieu_de LIKE :search1 OR dt.mo_ta LIKE :search2 OR nd.ho_ten LIKE :search3)";
             $params['search1'] = $searchValue;
-            $params['search2'] = $searchValue;
+            if (empty($filters['title_teacher_only'])) { $params['search2'] = $searchValue; }
             $params['search3'] = $searchValue;
         }
         
-        $sql .= " ORDER BY dt.created_at DESC";
+        if (!empty($filters['giang_vien_id'])) {
+            $sql .= " AND dt.giang_vien_id = :filter_teacher";
+            $params['filter_teacher'] = (int)$filters['giang_vien_id'];
+        }
+        if (!empty($filters['student_id']) && in_array($filters['followed'] ?? '', ['saved', 'unsaved'], true)) {
+            $sql .= ($filters['followed'] === 'unsaved' ? ' AND NOT EXISTS' : ' AND EXISTS')
+                . ' (SELECT 1 FROM de_tai_quan_tam qt WHERE qt.de_tai_id=dt.id AND qt.sinh_vien_id=:filter_student)';
+            $params['filter_student'] = (int)$filters['student_id'];
+        }
+        $orders = ['newest'=>'dt.created_at DESC,dt.id DESC', 'oldest'=>'dt.created_at ASC,dt.id ASC', 'title'=>'dt.tieu_de ASC,dt.id ASC'];
+        $sql .= ' ORDER BY ' . ($orders[$filters['sort'] ?? 'newest'] ?? $orders['newest']);
         
-        return $this->query($sql, $params);
+        $topics = $this->query($sql, $params);
+        if (isset($filters['technology']) && $filters['technology'] !== '') {
+            $technology = self::normalizeTechnology($filters['technology']);
+            $topics = array_values(array_filter($topics, static function ($topic) use ($technology) {
+                return array_key_exists($technology, self::technologyTokens($topic['cong_nghe'] ?? ''));
+            }));
+        }
+        return $topics;
+    }
+
+    public static function normalizeTechnology($value) {
+        return mb_strtolower(trim(preg_replace('/\s+/u', ' ', (string)$value)), 'UTF-8');
+    }
+
+    // Follow the comma-separated format used by the existing create/edit forms.
+    public static function technologyTokens($value) {
+        $tokens = [];
+        foreach (explode(',', (string)$value) as $label) {
+            $label = trim(preg_replace('/\s+/u', ' ', $label));
+            if ($label !== '') {
+                $tokens[self::normalizeTechnology($label)] = $label;
+            }
+        }
+        return $tokens;
     }
     
     /**

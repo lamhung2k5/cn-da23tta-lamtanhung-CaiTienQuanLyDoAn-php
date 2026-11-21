@@ -6,6 +6,11 @@
 
 class CaiDatModel extends BaseModel {
     protected $table = 'cai_dat';
+
+    public function setValue($key, $value) {
+        $stmt = $this->db->prepare('INSERT INTO cai_dat (key_name,value) VALUES (?,?) ON DUPLICATE KEY UPDATE value=VALUES(value),updated_at=NOW()');
+        return $stmt->execute([$key,$value]);
+    }
     
     /**
      * Lấy giá trị cài đặt theo key

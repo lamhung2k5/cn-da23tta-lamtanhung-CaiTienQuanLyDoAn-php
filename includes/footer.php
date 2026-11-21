@@ -11,6 +11,7 @@ $currentYear = date('Y');
 $isLoggedIn = isLoggedIn();
 ?>
 
+<?php if (empty($hideFooter)): ?>
 <!-- Footer -->
 <footer class="footer mt-auto py-4 bg-light border-top">
     <div class="container">
@@ -79,6 +80,7 @@ $isLoggedIn = isLoggedIn();
         </div>
     </div>
 </footer>
+<?php endif; ?>
 
 <!-- Back to Top Button -->
 <button type="button" class="btn btn-primary btn-floating btn-lg" id="btn-back-to-top" 
