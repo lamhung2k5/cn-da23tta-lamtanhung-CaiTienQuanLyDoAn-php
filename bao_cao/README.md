@@ -5,6 +5,7 @@
 - [Sinh viên](sinhvien/README.md): tra cứu, đăng ký, đề tài quan tâm và các chức năng dành cho Sinh viên.
 - [Giảng viên](giangvien/README.md): quản lý đề tài, sinh viên hướng dẫn và các chức năng dành cho Giảng viên.
 - [Lãnh đạo](lanhdao/README.md): tài khoản, cấu hình, duyệt đề tài, phân công và báo cáo.
+- [Landing page và trang công khai](landing_page/README.md): giới thiệu, danh sách giảng viên và dữ liệu công khai.
 
 Mỗi chức năng hoàn thành có một file Markdown, đặt tên `NN_ten_chuc_nang.md`, ví dụ `sinhvien/01_de_tai_quan_tam.md`. Chỉ tạo báo cáo kết quả khi đã triển khai và kiểm tra; ghi rõ phần chưa hoàn tất hoặc chưa kiểm tra.
 

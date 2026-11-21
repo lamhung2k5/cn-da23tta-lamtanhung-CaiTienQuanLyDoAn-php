@@ -8,7 +8,7 @@ require_once 'bootstrap.php';
 // Lấy thông báo công khai
 try {
     $thongBaoModel = new ThongBaoModel();
-    $dsThongBao = $thongBaoModel->getAllThongBaoCongKhai(10); // Lấy TẤT CẢ thông báo (không lọc ngày)
+    $dsThongBao = $thongBaoModel->getThongBaoCongKhai(10);
     $soThongBao = count($dsThongBao);
 } catch (Exception $e) {
     $dsThongBao = [];
@@ -3460,7 +3460,6 @@ if (isLoggedIn()) {
                             <?php if (!empty($dsThongBao)): ?>
                                 <?php foreach ($dsThongBao as $index => $tb): ?>
                                     <?php
-                                    $link = 'thong_bao_do_an.php';
                                     $isNew = $index === 0;
                                     $icon = 'bi-megaphone-fill';
                                     if ($tb['loai'] === 'success')
@@ -3495,8 +3494,7 @@ if (isLoggedIn()) {
                                             $dateRange = date('d/m/Y', $thoigian);
                                     }
                                     ?>
-                                    <!--<a href="#<?php //echo $link; ?>" class="notification-item-modern">-->
-                            		<div class="notification-item-modern">
+                                    <a href="chi_tiet_thong_bao.php?id=<?= (int)$tb['id'] ?>" class="notification-item-modern text-decoration-none">
                                         <div class="notification-icon-modern <?php echo $isNew ? 'new-notification' : ''; ?>">
                                             <i class="bi <?php echo e($icon); ?>"></i>
                                         </div>
@@ -3516,9 +3514,10 @@ if (isLoggedIn()) {
                                                 <?php echo e($dateRange); ?>
                                             </div>
                                         </div>
-                                    <!--</a>-->
-                           			</div>
+                                    </a>
                                 <?php endforeach; ?>
+                            <?php else: ?>
+                                <p class="text-white p-3 mb-0">Hiện chưa có thông báo đang công khai.</p>
                             <?php endif; ?>
                         </div>
                     </div>

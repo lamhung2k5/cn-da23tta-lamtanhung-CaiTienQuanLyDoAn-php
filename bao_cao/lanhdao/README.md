@@ -1,5 +1,9 @@
 # Báo cáo chức năng Lãnh đạo
 
+- [Quản lý thông báo chung và thông báo đồ án](../landing_page/02_he_thong_thong_bao.md): lịch hiển thị, xem trước, lưu ý độc lập và lịch đăng ký tự động.
+
+- [Quản lý giới thiệu giảng viên công khai](../landing_page/01_danh_sach_giang_vien_tu_csdl.md): cập nhật hồ sơ và bật/tắt hiển thị trên trang Khoa.
+
 Quy ước và nội dung báo cáo xem [mục lục chung](../README.md).
 
 ## Báo cáo dùng chung

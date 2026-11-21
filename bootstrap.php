@@ -11,6 +11,7 @@ require_once __DIR__ . '/config/database.php';
 // Load helpers
 require_once __DIR__ . '/helpers/functions.php';
 require_once __DIR__ . '/helpers/security.php';
+require_once __DIR__ . '/helpers/ThongBaoPolicy.php';
 require_once __DIR__ . '/helpers/email.php';
 require_once __DIR__ . '/helpers/phpmailer.php';
 

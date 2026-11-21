@@ -1,193 +1,7 @@
 <?php
 require_once __DIR__ . '/bootstrap.php';
-/**
- * CHI TIẾT GIẢNG VIÊN - VERSION 2
- * Phiên bản đơn giản, không phụ thuộc vào framework
- */
-
-// Bật hiển thị lỗi
-error_reporting(E_ALL);
-ini_set('display_errors', 0);
-
-// Lấy email từ URL
-$email = $_GET['email'] ?? '';
-$filter = 'da_duyet'; // Mặc định chỉ hiển thị đề tài đã duyệt
-$he_dao_tao_filter = $_GET['he_dao_tao'] ?? 'all'; // Bộ lọc hệ đào tạo
-
-if (empty($email)) {
-    ?>
-    <!DOCTYPE html>
-    <html lang="vi">
-
-    <head>
-<meta name="csrf-token" content="<?= e(generateCSRF()) ?>">
-<script src="<?= e(BASE_URL) ?>assets/js/security.js"></script>
-        <meta charset="UTF-8">
-        <title>Lỗi - Thiếu tham số</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 40px;
-            }
-
-            .error {
-                background: #f8d7da;
-                color: #721c24;
-                padding: 20px;
-                border-radius: 5px;
-            }
-        </style>
-    </head>
-
-    <body>
-        <div class="error">
-            <h2>Lỗi: Thiếu tham số email</h2>
-            <p>Cách sử dụng: <code>giang_vien_chi_tiet_v2.php?email=oane@tvu.edu.vn</code></p>
-            <p><a href="khoa_cntt.php">Quay lại</a></p>
-        </div>
-    </body>
-
-    </html>
-    <?php
-    exit;
-}
-
-// Kết nối database qua config chung (hỗ trợ cả localhost & InfinityFree)
-require_once __DIR__ . '/config/database.php';
-
-try {
-    $pdo = Database::getInstance()->getConnection();
-} catch (Exception $e) {
-    ?>
-    <!DOCTYPE html>
-    <html lang="vi">
-
-    <head>
-<meta name="csrf-token" content="<?= e(generateCSRF()) ?>">
-<script src="<?= e(BASE_URL) ?>assets/js/security.js"></script>
-        <meta charset="UTF-8">
-        <title>Lỗi Database</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 40px;
-            }
-
-            .error {
-                background: #f8d7da;
-                color: #721c24;
-                padding: 20px;
-                border-radius: 5px;
-            }
-        </style>
-    </head>
-
-    <body>
-        <div class="error">
-            <h2>Lỗi kết nối Database</h2>
-            <p><?= htmlspecialchars(safeError($e)) ?></p>
-            <p><a href="khoa_cntt.php">← Quay lại</a></p>
-        </div>
-    </body>
-
-    </html>
-    <?php
-    exit;
-}
-
-
-
-// Tìm người dùng trong database
-$stmt = $pdo->prepare("SELECT * FROM nguoi_dung WHERE email = ?");
-$stmt->execute([$email]);
-$nguoiDung = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$nguoiDung) {
-    // Fallback: tìm trong danh sách faculty_members.php
-    $allFaculty = require_once __DIR__ . '/config/faculty_members.php';
-    $foundInFaculty = null;
-    foreach ($allFaculty as $member) {
-        if (strtolower($member['email']) === strtolower($email)) {
-            $foundInFaculty = $member;
-            break;
-        }
-    }
-
-    if (!$foundInFaculty) {
-        // Không tìm thấy ở đâu → redirect
-        header('Location: khoa_cntt.php');
-        exit;
-    }
-
-    // Dựng $nguoiDung giả từ faculty_members để trang vẫn hiển thị
-    $nguoiDung = [
-        'id' => null,
-        'ho_ten' => $foundInFaculty['name'],
-        'email' => $foundInFaculty['email'],
-        'vai_tro' => 'giang_vien',
-    ];
-    // Dựng $giangVien giả
-    $giangVien = [
-        'id' => null,
-        'nguoi_dung_id' => null,
-        'khoa' => $foundInFaculty['khoa'] ?? '',
-        'so_dien_thoai' => $foundInFaculty['phone'] ?? '',
-        'chuc_danh' => $foundInFaculty['position'] ?? '',
-        'avatar' => null,
-    ];
-    $danhSachDeTai = [];
-    $tatCaDeTai = [];
-    $thongKe = ['tong' => 0, 'nhap' => 0, 'cho_duyet' => 0, 'da_duyet' => 0, 'tu_choi' => 0, 'co_so_nganh' => 0, 'chuyen_nganh' => 0];
-} else {
-    // Tìm thông tin giảng viên
-    $stmt = $pdo->prepare("SELECT * FROM giang_vien WHERE nguoi_dung_id = ?");
-    $stmt->execute([$nguoiDung['id']]);
-    $giangVien = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    // Lấy danh sách đề tài (nếu có profile giảng viên)
-    $danhSachDeTai = [];
-    if ($giangVien) {
-        $sql = "SELECT * FROM de_tai WHERE giang_vien_id = ? AND trang_thai = 'da_duyet'";
-        $params = [$giangVien['id']];
-
-        // Thêm điều kiện lọc theo hệ đào tạo
-        if ($he_dao_tao_filter !== 'all') {
-            $sql .= " AND he_dao_tao = ?";
-            $params[] = $he_dao_tao_filter;
-        }
-
-        $sql .= " ORDER BY created_at DESC";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        $danhSachDeTai = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    // Lấy thống kê đề tài (luôn lấy tất cả để hiển thị số liệu chính xác)
-    $tatCaDeTai = [];
-    if ($giangVien) {
-        $stmt = $pdo->prepare("SELECT * FROM de_tai WHERE giang_vien_id = ?");
-        $stmt->execute([$giangVien['id']]);
-        $tatCaDeTai = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    $thongKe = [
-        'tong' => count($tatCaDeTai),
-        'nhap' => 0,
-        'cho_duyet' => 0,
-        'da_duyet' => 0,
-        'tu_choi' => 0,
-        'co_so_nganh' => 0,
-        'chuyen_nganh' => 0
-    ];
-} // end else (nguoiDung found in DB)
-
-foreach ($tatCaDeTai as $dt) {
-    $thongKe[$dt['trang_thai']]++;
-    $thongKe[$dt['he_dao_tao']]++;
-}
+require __DIR__ . '/includes/public_faculty_detail_data.php';
 ?>
-
-
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -553,23 +367,14 @@ foreach ($tatCaDeTai as $dt) {
             <div class="row align-items-center">
                 <div class="col-auto">
                     <div class="profile-avatar">
-                        <?php
-                        // Kiểm tra xem có ảnh đại diện không
-                        $avatarContent = '<i class="bi bi-person-fill"></i>'; // Mặc định
-                        
-                        if ($giangVien && is_array($giangVien) && !empty($giangVien['avatar'])) {
-                            $avatarPath = 'uploads/avatars/' . $giangVien['avatar'];
-                            if (file_exists($avatarPath)) {
-                                $avatarContent = '<img src="' . $avatarPath . '" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">';
-                            }
-                        }
-
-                        echo $avatarContent;
-                        ?>
+                        <i class="bi bi-person-fill"></i>
                     </div>
                 </div>
                 <div class="col">
                     <h2 class="mb-2"><?= htmlspecialchars($nguoiDung['ho_ten']) ?></h2>
+                    <p class="mb-1"><?= e($giangVien['chuc_vu_cong_khai']) ?></p>
+                    <?php if ($giangVien['so_noi_bo']): ?><p class="mb-1">Số nội bộ: <?= e($giangVien['so_noi_bo']) ?></p><?php endif; ?>
+                    <?php if ($giangVien['chuyen_mon']): ?><p class="mb-1">Chuyên môn: <?= e($giangVien['chuyen_mon']) ?></p><?php endif; ?>
                     <p class="mb-1"><i class="bi bi-envelope"></i> <?= htmlspecialchars($nguoiDung['email']) ?></p>
                     <?php if ($giangVien): ?>
 
@@ -578,20 +383,7 @@ foreach ($tatCaDeTai as $dt) {
                         <?php endif; ?>
                         <?php
                         // Lấy số điện thoại từ database hoặc config
-                        $soDienThoai = null;
-                        if ($giangVien && is_array($giangVien) && !empty($giangVien['so_dien_thoai'])) {
-                            $soDienThoai = $giangVien['so_dien_thoai'];
-                        } else {
-                            // Nếu không có trong database, lấy từ config faculty_members
-                            $faculty_members = require_once __DIR__ . '/config/faculty_members.php';
-                            foreach ($faculty_members as $member) {
-                                if ($member['email'] === $nguoiDung['email']) {
-                                    $soDienThoai = $member['phone'];
-                                    break;
-                                }
-                            }
-                        }
-
+                        $soDienThoai = $giangVien['so_dien_thoai'] ?? null;
                         if ($soDienThoai): ?>
                             <p class="mb-0"><i class="bi bi-telephone"></i> <?= htmlspecialchars($soDienThoai) ?></p>
                         <?php endif; ?>
@@ -626,13 +418,13 @@ foreach ($tatCaDeTai as $dt) {
                 <div class="d-flex flex-wrap align-items-center">
                     <span class="me-3 fw-bold text-muted">Lọc theo hệ đề tài :</span>
 
-                    <a href="?email=<?= urlencode($email) ?>&filter=all&he_dao_tao=co_so_nganh"
+                    <a href="?id=<?= (int)$giangVien['id'] ?>&he_dao_tao=co_so_nganh"
                         class="filter-btn <?= $he_dao_tao_filter === 'co_so_nganh' ? 'active' : '' ?>">
                         <span class="text-primary fw-bold">Cơ sở ngành</span>
                         <span class="filter-count"><?= e($thongKe['co_so_nganh']) ?></span>
                     </a>
 
-                    <a href="?email=<?= urlencode($email) ?>&filter=all&he_dao_tao=chuyen_nganh"
+                    <a href="?id=<?= (int)$giangVien['id'] ?>&he_dao_tao=chuyen_nganh"
                         class="filter-btn <?= $he_dao_tao_filter === 'chuyen_nganh' ? 'active' : '' ?>">
                         <span class="text-success fw-bold">Chuyên ngành</span>
                         <span class="filter-count"><?= e($thongKe['chuyen_nganh']) ?></span>
@@ -688,7 +480,7 @@ foreach ($tatCaDeTai as $dt) {
                         </h5>
                         <p>
                             <?php if ($filter !== 'all'): ?>
-                                <a href="?email=<?= urlencode($email) ?>&filter=all" class="btn btn-outline-primary btn-sm">
+                                <a href="?id=<?= (int)$giangVien['id'] ?>" class="btn btn-outline-primary btn-sm">
                                     Xem tất cả đề tài
                                 </a>
                             <?php else: ?>

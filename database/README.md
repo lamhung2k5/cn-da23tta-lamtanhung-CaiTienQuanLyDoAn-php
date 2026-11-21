@@ -57,3 +57,8 @@ Bản dump riêng trước bảo trì nằm tại `storage/backups/qldt_database
 Bộ schema/seed mới đã có bảng và cấu hình quan tâm. Với database có sẵn, sao lưu rồi import `database/migrations/002_de_tai_quan_tam.sql` vào đúng database; hoặc chạy `php database/apply_002.php` theo cấu hình cục bộ đang chọn. Áp dụng migration trước khi mở trang Sinh viên trên database đó. Migration không xóa dữ liệu và không ghi đè cài đặt đã có.
 
 Máy hiện tại đã áp dụng cho `qldt_demo`; chưa áp dụng cho database thật `qldt_database`. Lịch đăng ký và giới hạn xem tại Lãnh đạo → Cài đặt thông số → Đăng ký đề tài. Báo cáo: `bao_cao/sinhvien/01_de_tai_quan_tam.md`.
+# Giảng viên công khai — migration 003
+
+Sau khi xác nhận CSDL đích, chạy CLI `E:/xampp/php/php.exe database/apply_003.php`. Dùng MariaDB, bổ sung chức vụ công khai, số nội bộ và cờ hiển thị (mặc định ẩn) vào hồ sơ giảng viên. Schema cài mới đã có các trường này. Đợt triển khai hiện chỉ áp dụng trên demo, chưa áp dụng CSDL thật.
+
+Đối chiếu dữ liệu giới thiệu cũ bằng `E:/xampp/php/php.exe database/import_faculty_directory.php` (preview). Chỉ thêm `--apply` khi muốn điền các trường còn trống cho hồ sơ có email khớp; không tạo tài khoản, không tự công khai hoặc đổi chức vụ/quyền. Xem [báo cáo](../bao_cao/landing_page/01_danh_sach_giang_vien_tu_csdl.md).

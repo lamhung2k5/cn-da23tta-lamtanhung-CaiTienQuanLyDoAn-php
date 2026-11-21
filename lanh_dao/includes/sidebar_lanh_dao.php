@@ -38,6 +38,9 @@ if (!isset($currentPage)) {
         </a>
         
         <div class="nav-section-title">QUẢN LÝ NỘI DUNG</div>
+        <a class="nav-link <?= $currentPage === 'gioi_thieu_giang_vien.php' ? 'active' : '' ?>" href="gioi_thieu_giang_vien.php">
+            <i class="bi bi-person-vcard"></i> Giới thiệu giảng viên
+        </a>
         <a class="nav-link <?= $currentPage === 'quan_ly_noi_dung_do_an.php' ? 'active' : '' ?>" href="quan_ly_noi_dung_do_an.php">
             <i class="bi bi-file-earmark-text"></i> Thông báo đồ án
         </a>

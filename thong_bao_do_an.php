@@ -8,77 +8,16 @@ require_once 'bootstrap.php';
 
 $pageTitle = 'Thông báo thời gian nộp đồ án';
 
-// Check if user is logged in as lãnh đạo
-$isLanhDao = false;
-$user = null;
-if (function_exists('getCurrentUser')) {
-    $user = getCurrentUser();
-    if ($user && isset($user['vai_tro']) && $user['vai_tro'] === 'lanh_dao') {
-        $isLanhDao = true;
-    }
-}
-
-// Handle edit form submission
-if ($isLanhDao && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    $contentModel = new ThongBaoDoAnModel();
-
-    if ($_POST['action'] === 'save_timeline') {
-        $id = (int) $_POST['id'];
-        $data = [
-            'loai' => $_POST['loai'],
-            'thu_tu' => $_POST['thu_tu'],
-            'tieu_de' => $_POST['tieu_de'],
-            'noi_dung' => $_POST['noi_dung'],
-            'ngay' => $_POST['ngay'],
-            'thang' => $_POST['thang'],
-            'nam' => $_POST['nam'],
-            'yeu_cau' => $_POST['yeu_cau'],
-            'trang_thai' => $_POST['trang_thai']
-        ];
-        $contentModel->updateTimelineItem($id, $data);
-    }
-
-    if ($_POST['action'] === 'save_notice') {
-        $notice = $contentModel->getNotice();
-        $data = [
-            'tieu_de' => $_POST['tieu_de'],
-            'noi_dung' => $_POST['noi_dung'],
-            'trang_thai' => $_POST['trang_thai']
-        ];
-        $contentModel->updateNotice($notice['id'], $data);
-    }
-
-    if ($_POST['action'] === 'save_page') {
-        $pageContent = $contentModel->getPageContent();
-        $data = [
-            'page_title' => $_POST['page_title'],
-            'subtitle' => $_POST['subtitle'],
-            'date_badge' => $_POST['date_badge'],
-            'trang_thai' => $_POST['trang_thai'],
-            'ngay_bat_dau' => !empty($_POST['ngay_bat_dau']) ? $_POST['ngay_bat_dau'] : null,
-            'ngay_ket_thuc' => !empty($_POST['ngay_ket_thuc']) ? $_POST['ngay_ket_thuc'] : null
-        ];
-        $contentModel->updatePageContent($pageContent['id'], $data);
-    }
-
-    // Refresh data
-    $pageContent = $contentModel->getPageContent();
-    $timelineCoSoNganh = $contentModel->getTimelineItems('co_so_nganh');
-    $timelineChuyenNganh = $contentModel->getTimelineItems('chuyen_nganh');
-    $notice = $contentModel->getNotice();
-}
-
-// Lấy nội dung từ database
+$isLanhDao = hasRole(ROLE_LANH_DAO);
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') { securityDeny(405, 'Use the leadership management screen.'); }
 $contentModel = new ThongBaoDoAnModel();
-$pageContent = $contentModel->getPageContent();
-$timelineCoSoNganh = $contentModel->getTimelineItems('co_so_nganh');
-$timelineChuyenNganh = $contentModel->getTimelineItems('chuyen_nganh');
-$notice = $contentModel->getNotice();
-
-// Kiểm tra trang có đang hoạt động không
 $pageActive = $contentModel->isPageActive();
+$pageContent = $pageActive ? $contentModel->getPageContent() : [];
+$timelineCoSoNganh = $pageActive ? $contentModel->getTimelineItems('co_so_nganh') : [];
+$timelineChuyenNganh = $pageActive ? $contentModel->getTimelineItems('chuyen_nganh') : [];
+$notice = $pageActive ? $contentModel->getNotice() : null;
+header('Cache-Control: no-store');
 
-// Tính toán countdown cho mỗi mốc thời gian
 function getCountdownInfo($ngay, $thang, $nam)
 {
     $deadline = mktime(23, 59, 59, $thang, $ngay, $nam);
@@ -1039,10 +978,7 @@ function getCountdownInfo($ngay, $thang, $nam)
                     </li>
                     <li><a href="auth/login.php" class="nav-item login-btn"><i class="bi bi-box-arrow-in-right"></i>
                             Đăng nhập</a></li>
-                    <?php if ($isLanhDao): ?>
-                        <li><a href="thong_bao_do_an.php" class="nav-item" style="background: rgba(255,193,7,0.2);"><i
-                                    class="bi bi-pencil"></i> Chỉnh sửa</a></li>
-                    <?php endif; ?>
+
                     <li>
 
                     </li>
@@ -1056,69 +992,22 @@ function getCountdownInfo($ngay, $thang, $nam)
     <main class="main-content">
         <div class="container">
             <!-- Announcement Header -->
+            <?php if ($isLanhDao): ?><a class="btn btn-primary mb-3" href="lanh_dao/quan_ly_noi_dung_do_an.php">Chỉnh sửa nội dung</a><?php endif; ?>
             <div class="announcement-card">
                 <div class="announcement-header">
-                    <?php if ($isLanhDao): ?>
-                        <button class="btn btn-primary btn-sm edit-btn" onclick="toggleEditForm('page')">
-                            <i class="bi bi-pencil"></i> Sửa
-                        </button>
-                        <div id="edit-form-page" class="edit-form"
-                            style="text-align: left; max-width: 600px; margin: 20px auto;">
-                            <h5 class="mb-3">Sửa thông tin trang</h5>
-                            <form method="POST"><?= csrf_field() ?>
-                                <input type="hidden" name="action" value="save_page">
-                                <div class="mb-2">
-                                    <label class="form-label">Tiêu đề</label>
-                                    <input type="text" name="page_title" class="form-control"
-                                        value="<?php echo htmlspecialchars($pageContent['page_title'] ?? ''); ?>">
-                                </div>
-                                <div class="mb-2">
-                                    <label class="form-label">Mô tả</label>
-                                    <input type="text" name="subtitle" class="form-control"
-                                        value="<?php echo htmlspecialchars($pageContent['subtitle'] ?? ''); ?>">
-                                </div>
-                                <div class="mb-2">
-                                    <label class="form-label">Nhãn ngày</label>
-                                    <input type="text" name="date_badge" class="form-control"
-                                        value="<?php echo htmlspecialchars($pageContent['date_badge'] ?? ''); ?>">
-                                </div>
-                                <div class="row mb-2">
-                                    <div class="col-md-4">
-                                        <label class="form-label">Trạng thái</label>
-                                        <select name="trang_thai" class="form-control">
-                                            <option value="mo" <?php echo ($pageContent['trang_thai'] ?? 'mo') === 'mo' ? 'selected' : ''; ?>>Mở</option>
-                                            <option value="khoa" <?php echo ($pageContent['trang_thai'] ?? 'mo') === 'khoa' ? 'selected' : ''; ?>>Khóa</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label">Từ ngày</label>
-                                        <input type="date" name="ngay_bat_dau" class="form-control"
-                                            value="<?php echo $pageContent['ngay_bat_dau'] ?? ''; ?>">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label">Đến ngày</label>
-                                        <input type="date" name="ngay_ket_thuc" class="form-control"
-                                            value="<?php echo $pageContent['ngay_ket_thuc'] ?? ''; ?>">
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check"></i>
-                                    Lưu</button>
-                                <button type="button" class="btn btn-secondary btn-sm"
-                                    onclick="toggleEditForm('page')">Hủy</button>
-                            </form>
-                        </div>
-                    <?php endif; ?>
+
                     <h1><i class="bi bi-megaphone-fill"></i>
                         <?php echo htmlspecialchars($pageContent['page_title'] ?? 'THÔNG BÁO'); ?></h1>
                     <p class="subtitle">
                         <?php echo htmlspecialchars($pageContent['subtitle'] ?? 'Thời gian nộp đồ án cơ sở ngành và chuyên ngành'); ?>
                     </p>
                     <span class="date-badge">
-                        <?php echo htmlspecialchars($pageContent['date_badge'] ?? 'Học kỳ II - Năm học 2025-2026'); ?>
+                        <?php echo htmlspecialchars($pageContent['date_badge'] ?? ''); ?>
                     </span>
                 </div>
 
                 <!-- Page is locked message -->
+                <?php if ($pageActive) { include __DIR__ . '/includes/registration_schedule.php'; } ?>
                 <?php if (!$pageActive): ?>
                     <div class="alert alert-secondary d-flex align-items-center mb-4" role="alert"
                         style="border-radius: 12px;">
@@ -1143,46 +1032,7 @@ function getCountdownInfo($ngay, $thang, $nam)
                                 <?php if (!empty($timelineCoSoNganh)): ?>
                                     <?php foreach ($timelineCoSoNganh as $item): ?>
                                         <div class="timeline-item">
-                                            <?php if ($isLanhDao): ?>
-                                                <button class="btn btn-primary btn-sm edit-btn"
-                                                    onclick="toggleEditForm('timeline-<?php echo e($item['id']); ?>')">
-                                                    <i class="bi bi-pencil"></i>
-                                                </button>
-                                                <div id="edit-form-timeline-<?php echo e($item['id']); ?>" class="edit-form">
-                                                    <h6>Sửa mốc: <?php echo htmlspecialchars($item['tieu_de']); ?></h6>
-                                                    <form method="POST"><?= csrf_field() ?>
-                                                        <input type="hidden" name="action" value="save_timeline">
-                                                        <input type="hidden" name="id" value="<?php echo e($item['id']); ?>">
-                                                        <div class="row">
-                                                            <div class="col-md-2"><input type="number" name="ngay" class="form-control"
-                                                                    value="<?php echo e($item['ngay']); ?>" placeholder="Ngày"></div>
-                                                            <div class="col-md-2"><input type="number" name="thang" class="form-control"
-                                                                    value="<?php echo e($item['thang']); ?>" placeholder="Tháng"></div>
-                                                            <div class="col-md-3"><input type="number" name="nam" class="form-control"
-                                                                    value="<?php echo e($item['nam']); ?>" placeholder="Năm"></div>
-                                                            <div class="col-md-2"><input type="number" name="thu_tu"
-                                                                    class="form-control" value="<?php echo e($item['thu_tu']); ?>"
-                                                                    placeholder="Thứ tự"></div>
-                                                            <div class="col-md-3"><select name="trang_thai" class="form-control">
-                                                                    <option value="mo" <?php echo $item['trang_thai'] === 'mo' ? 'selected' : ''; ?>>Hiện</option>
-                                                                    <option value="khoa" <?php echo $item['trang_thai'] === 'khoa' ? 'selected' : ''; ?>>Ẩn</option>
-                                                                </select></div>
-                                                        </div>
-                                                        <input type="text" name="tieu_de" class="form-control"
-                                                            value="<?php echo htmlspecialchars($item['tieu_de']); ?>"
-                                                            placeholder="Tiêu đề">
-                                                        <textarea name="noi_dung" class="form-control"
-                                                            placeholder="Nội dung"><?php echo htmlspecialchars($item['noi_dung']); ?></textarea>
-                                                        <textarea name="yeu_cau" class="form-control"
-                                                            placeholder="Yêu cầu (mỗi dòng một)"><?php echo htmlspecialchars(str_replace('|', "\n", $item['yeu_cau'])); ?></textarea>
-                                                        <input type="hidden" name="loai" value="<?php echo e($item['loai']); ?>">
-                                                        <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check"></i>
-                                                            Lưu</button>
-                                                        <button type="button" class="btn btn-secondary btn-sm"
-                                                            onclick="toggleEditForm('timeline-<?php echo e($item['id']); ?>')">Hủy</button>
-                                                    </form>
-                                                </div>
-                                            <?php endif; ?>
+
                                             <div class="timeline-date">
                                                 <span class="day"><?php echo e($item['ngay']); ?></span>
                                                 <span class="month">Tháng <?php echo e($item['thang']); ?></span>
@@ -1227,46 +1077,7 @@ function getCountdownInfo($ngay, $thang, $nam)
                                 <?php if (!empty($timelineChuyenNganh)): ?>
                                     <?php foreach ($timelineChuyenNganh as $item): ?>
                                         <div class="timeline-item">
-                                            <?php if ($isLanhDao): ?>
-                                                <button class="btn btn-success btn-sm edit-btn"
-                                                    onclick="toggleEditForm('timeline-<?php echo e($item['id']); ?>')">
-                                                    <i class="bi bi-pencil"></i>
-                                                </button>
-                                                <div id="edit-form-timeline-<?php echo e($item['id']); ?>" class="edit-form">
-                                                    <h6>Sửa mốc: <?php echo htmlspecialchars($item['tieu_de']); ?></h6>
-                                                    <form method="POST"><?= csrf_field() ?>
-                                                        <input type="hidden" name="action" value="save_timeline">
-                                                        <input type="hidden" name="id" value="<?php echo e($item['id']); ?>">
-                                                        <div class="row">
-                                                            <div class="col-md-2"><input type="number" name="ngay" class="form-control"
-                                                                    value="<?php echo e($item['ngay']); ?>" placeholder="Ngày"></div>
-                                                            <div class="col-md-2"><input type="number" name="thang" class="form-control"
-                                                                    value="<?php echo e($item['thang']); ?>" placeholder="Tháng"></div>
-                                                            <div class="col-md-3"><input type="number" name="nam" class="form-control"
-                                                                    value="<?php echo e($item['nam']); ?>" placeholder="Năm"></div>
-                                                            <div class="col-md-2"><input type="number" name="thu_tu"
-                                                                    class="form-control" value="<?php echo e($item['thu_tu']); ?>"
-                                                                    placeholder="Thứ tự"></div>
-                                                            <div class="col-md-3"><select name="trang_thai" class="form-control">
-                                                                    <option value="mo" <?php echo $item['trang_thai'] === 'mo' ? 'selected' : ''; ?>>Hiện</option>
-                                                                    <option value="khoa" <?php echo $item['trang_thai'] === 'khoa' ? 'selected' : ''; ?>>Ẩn</option>
-                                                                </select></div>
-                                                        </div>
-                                                        <input type="text" name="tieu_de" class="form-control"
-                                                            value="<?php echo htmlspecialchars($item['tieu_de']); ?>"
-                                                            placeholder="Tiêu đề">
-                                                        <textarea name="noi_dung" class="form-control"
-                                                            placeholder="Nội dung"><?php echo htmlspecialchars($item['noi_dung']); ?></textarea>
-                                                        <textarea name="yeu_cau" class="form-control"
-                                                            placeholder="Yêu cầu (mỗi dòng một)"><?php echo htmlspecialchars(str_replace('|', "\n", $item['yeu_cau'])); ?></textarea>
-                                                        <input type="hidden" name="loai" value="<?php echo e($item['loai']); ?>">
-                                                        <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check"></i>
-                                                            Lưu</button>
-                                                        <button type="button" class="btn btn-secondary btn-sm"
-                                                            onclick="toggleEditForm('timeline-<?php echo e($item['id']); ?>')">Hủy</button>
-                                                    </form>
-                                                </div>
-                                            <?php endif; ?>
+
                                             <div class="timeline-date">
                                                 <span class="day"><?php echo e($item['ngay']); ?></span>
                                                 <span class="month">Tháng <?php echo e($item['thang']); ?></span>
@@ -1305,32 +1116,7 @@ function getCountdownInfo($ngay, $thang, $nam)
                     <!-- Important Notice -->
                     <?php if ($notice && $notice['trang_thai'] === 'mo'): ?>
                         <div class="important-notice">
-                            <?php if ($isLanhDao): ?>
-                                <button class="btn btn-light btn-sm edit-btn" onclick="toggleEditForm('notice')">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <div id="edit-form-notice" class="edit-form"
-                                    style="background: rgba(255,255,255,0.95); text-align: left;">
-                                    <h6>Sửa lưu ý</h6>
-                                    <form method="POST"><?= csrf_field() ?>
-                                        <input type="hidden" name="action" value="save_notice">
-                                        <input type="text" name="tieu_de" class="form-control"
-                                            value="<?php echo htmlspecialchars($notice['tieu_de']); ?>" placeholder="Tiêu đề">
-                                        <textarea name="noi_dung" class="form-control" rows="3"
-                                            placeholder="Nội dung"><?php echo htmlspecialchars($notice['noi_dung']); ?></textarea>
-                                        <select name="trang_thai" class="form-control mb-2">
-                                            <option value="mo" <?php echo $notice['trang_thai'] === 'mo' ? 'selected' : ''; ?>>Hiện
-                                            </option>
-                                            <option value="khoa" <?php echo $notice['trang_thai'] === 'khoa' ? 'selected' : ''; ?>>Ẩn
-                                            </option>
-                                        </select>
-                                        <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check"></i>
-                                            Lưu</button>
-                                        <button type="button" class="btn btn-secondary btn-sm"
-                                            onclick="toggleEditForm('notice')">Hủy</button>
-                                    </form>
-                                </div>
-                            <?php endif; ?>
+
                             <h3>
                                 <?php echo htmlspecialchars($notice['tieu_de']); ?>
                             </h3>
@@ -1421,11 +1207,11 @@ function getCountdownInfo($ngay, $thang, $nam)
 
             if (html.getAttribute('data-theme') === 'dark') {
                 html.setAttribute('data-theme', 'light');
-                themeIcon.className = 'bi bi-moon-fill';
+                if (themeIcon) themeIcon.className = 'bi bi-moon-fill';
                 localStorage.setItem('theme', 'light');
             } else {
                 html.setAttribute('data-theme', 'dark');
-                themeIcon.className = 'bi bi-sun-fill';
+                if (themeIcon) themeIcon.className = 'bi bi-sun-fill';
                 localStorage.setItem('theme', 'dark');
             }
         }
@@ -1454,11 +1240,11 @@ function getCountdownInfo($ngay, $thang, $nam)
             if (!savedTheme) {
                 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                     html.setAttribute('data-theme', 'dark');
-                    themeIcon.className = 'bi bi-sun-fill';
+                    if (themeIcon) themeIcon.className = 'bi bi-sun-fill';
                 }
             } else if (savedTheme === 'dark') {
                 html.setAttribute('data-theme', 'dark');
-                themeIcon.className = 'bi bi-sun-fill';
+                if (themeIcon) themeIcon.className = 'bi bi-sun-fill';
             }
         });
     </script>

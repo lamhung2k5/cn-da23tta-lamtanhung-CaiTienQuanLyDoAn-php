@@ -156,6 +156,7 @@ include_once __DIR__ . '/../includes/header.php';
                 </div>
             </div>
 
+            <a class="btn btn-outline-primary mb-3" href="gioi_thieu_giang_vien.php">Quản lý giới thiệu giảng viên</a>
             <?php include __DIR__ . '/includes/account_security_form.php'; ?>
             <!-- Card Quản lý tài khoản (Tabs & Content) -->
             <div class="card shadow-sm border-0">

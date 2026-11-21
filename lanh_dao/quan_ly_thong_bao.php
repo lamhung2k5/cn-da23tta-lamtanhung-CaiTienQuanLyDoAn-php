@@ -16,60 +16,7 @@ $thongBaoModel = new ThongBaoModel();
 $lanhDao = $lanhDaoModel->getByNguoiDungId($user['id']);
 
 // Xử lý form thêm/sửa thông báo
-$message = '';
-$error = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['action'])) {
-        if ($_POST['action'] === 'add') {
-            $tieuDe = trim($_POST['tieu_de'] ?? '');
-            $noiDung = trim($_POST['noi_dung'] ?? '');
-            $loai = $_POST['loai'] ?? 'info';
-            $link = trim($_POST['link'] ?? 'thong_bao.php');
-            $loaiThongBao = 'thong_bao';
-            $ngayBatDau = !empty($_POST['ngay_bat_dau']) ? $_POST['ngay_bat_dau'] : null;
-            $ngayKetThuc = !empty($_POST['ngay_ket_thuc']) ? $_POST['ngay_ket_thuc'] : null;
-            $trangThai = $_POST['trang_thai'] ?? 'mo';
-
-            if (empty($tieuDe)) {
-                $error = 'Vui lòng nhập tiêu đề thông báo';
-            } else {
-                $thongBaoModel->taoThongBaoCongKhai($tieuDe, $noiDung, $loai, $link, $loaiThongBao, $ngayBatDau, $ngayKetThuc, $trangThai);
-                $message = 'Thêm thông báo thành công';
-            }
-        } elseif ($_POST['action'] === 'delete') {
-            $id = (int) $_POST['id'];
-            if ($id > 0) {
-                $thongBaoModel->delete($id);
-                $message = 'Xóa thông báo thành công';
-            }
-        } elseif ($_POST['action'] === 'toggle_status') {
-            $id = (int) $_POST['id'];
-            if ($id > 0) {
-                $thongBaoModel->toggleTrangThai($id);
-                $message = 'Cập nhật trạng thái thành công';
-            }
-        } elseif ($_POST['action'] === 'update') {
-            $id = (int) $_POST['id'];
-            $tieuDe = trim($_POST['tieu_de'] ?? '');
-            $noiDung = trim($_POST['noi_dung'] ?? '');
-            $loai = $_POST['loai'] ?? 'info';
-            $link = trim($_POST['link'] ?? 'thong_bao.php');
-            $loaiThongBao = 'thong_bao';
-            $ngayBatDau = !empty($_POST['ngay_bat_dau']) ? $_POST['ngay_bat_dau'] : null;
-            $ngayKetThuc = !empty($_POST['ngay_ket_thuc']) ? $_POST['ngay_ket_thuc'] : null;
-            $trangThai = $_POST['trang_thai'] ?? 'mo';
-
-            if ($id > 0 && !empty($tieuDe)) {
-                $thongBaoModel->capNhatThongBao($id, $tieuDe, $noiDung, $loai, $link, $loaiThongBao, $ngayBatDau, $ngayKetThuc, $trangThai);
-                $message = 'Cập nhật thông báo thành công';
-            }
-        }
-    }
-}
-
-// Lấy danh sách thông báo (TẤT CẢ - không lọc theo ngày)
-$dsThongBao = $thongBaoModel->getAllThongBaoCongKhai(50);
+require __DIR__ . '/includes/announcement_actions.php';
 
 // Include header
 include_once __DIR__ . '/../includes/header.php';
@@ -1169,13 +1116,14 @@ include_once __DIR__ . '/../includes/header.php';
 
             <!-- Notifications List -->
             <div class="fade-in-up">
+                <?php include __DIR__ . '/includes/announcement_filters.php'; ?>
                 <?php if (empty($dsThongBao)): ?>
                     <div class="card-modern">
                         <div class="card-body-modern">
                             <div class="empty-state">
                                 <i class="bi bi-megaphone text-dark"></i>
-                                <h3>Chưa có thông báo nào</h3>
-                                <p>Hãy tạo thông báo đầu tiên để hiển thị trên trang chủ</p>
+                                <h3>Không tìm thấy thông báo phù hợp</h3>
+                                <p>Thử đổi từ khóa, xóa bộ lọc hoặc thêm thông báo mới.</p>
                             </div>
                         </div>
                     </div>
@@ -1200,6 +1148,8 @@ include_once __DIR__ . '/../includes/header.php';
 
                                 </div>
                                 <div class="notification-actions">
+                                    <span class="badge bg-secondary"><?= e(ThongBaoPolicy::LABELS[ThongBaoPolicy::state($thongBao)]) ?></span>
+                                    <a class="btn btn-outline-info btn-sm" target="_blank" href="../chi_tiet_thong_bao.php?id=<?= (int)$thongBao['id'] ?>&preview=1">Xem trước</a>
                                     <form method="POST" class="d-inline"><?= csrf_field() ?>
                                         <input type="hidden" name="action" value="toggle_status">
                                         <input type="hidden" name="id" value="<?= e($thongBao['id']) ?>">
@@ -1213,7 +1163,6 @@ include_once __DIR__ . '/../includes/header.php';
                                         data-tieu_de="<?= htmlspecialchars($thongBao['tieu_de']) ?>"
                                         data-noi_dung="<?= htmlspecialchars($thongBao['noi_dung']) ?>"
                                         data-loai="<?= e($thongBao['loai']) ?>"
-                                        data-link="<?= htmlspecialchars($thongBao['link']) ?>"
                                         data-ngay_bat_dau="<?= e($thongBao['ngay_bat_dau']) ?>"
                                         data-ngay_ket_thuc="<?= e($thongBao['ngay_ket_thuc']) ?>"
                                         data-trang_thai="<?= e($thongBao['trang_thai']) ?>">
@@ -1289,7 +1238,6 @@ include_once __DIR__ . '/../includes/header.php';
                             </div>
                         </div>
 
-                        <input type="hidden" name="link" value="thong_bao.php">
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label form-label-modern">Ngày bắt đầu</label>
@@ -1362,7 +1310,6 @@ include_once __DIR__ . '/../includes/header.php';
                                 rows="6" required></textarea>
                         </div>
 
-                        <input type="hidden" name="link" value="thong_bao.php">
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label form-label-modern">Ngày bắt đầu</label>
@@ -1541,6 +1488,7 @@ include_once __DIR__ . '/../includes/header.php';
 
     <?php include_once __DIR__ . '/includes/modal_quan_ly_tai_khoan.php'; ?>
 
-    </body>
+    <?php include __DIR__ . '/includes/announcement_restore.php'; ?>
+</body>
 
     </html>

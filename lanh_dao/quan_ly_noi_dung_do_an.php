@@ -20,127 +20,7 @@ $timelineChuyenNganh = $contentModel->getTimelineItemsForAdmin('chuyen_nganh'); 
 $notice = $contentModel->getNoticeForAdmin() ?: []; // Use admin version to get notice regardless of status
 
 // Handle form submissions
-$message = '';
-$error = '';
-
-// Check for messages from redirect
-if (isset($_GET['message'])) {
-    $message = $_GET['message'];
-}
-if (isset($_GET['error'])) {
-    $error = $_GET['error'];
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
-    $redirectTab = $_POST['current_tab'] ?? 'page-settings';
-
-    // Update page content & notice
-    if ($action === 'update_page') {
-        $data = [
-            'page_title' => $_POST['page_title'],
-            'subtitle' => $_POST['subtitle'],
-            'date_badge' => $_POST['date_badge'],
-            'trang_thai' => $_POST['trang_thai'],
-            'ngay_bat_dau' => !empty($_POST['ngay_bat_dau']) ? $_POST['ngay_bat_dau'] : null,
-            'ngay_ket_thuc' => !empty($_POST['ngay_ket_thuc']) ? $_POST['ngay_ket_thuc'] : null
-        ];
-        $pageId = $pageContent['id'] ?? null;
-        $contentModel->updatePageContent($pageId, $data);
-
-        if (isset($_POST['notice_tieu_de'])) {
-            $noticeData = [
-                'tieu_de' => $_POST['notice_tieu_de'],
-                'noi_dung' => $_POST['notice_noi_dung'],
-                'trang_thai' => $_POST['trang_thai']
-            ];
-            $noticeId = $notice['id'] ?? null;
-            $contentModel->updateNotice($noticeId, $noticeData);
-        }
-
-        $message = 'Cập nhật thông tin trang thành công';
-        $redirectTab = 'page-settings';
-    }
-
-    // Add timeline item
-    elseif ($action === 'add_timeline') {
-        $yeuCau = implode('|', array_filter($_POST['yeu_cau'] ?? []));
-        $data = [
-            'loai' => $_POST['loai'],
-            'thu_tu' => $_POST['thu_tu'],
-            'tieu_de' => $_POST['tieu_de'],
-            'noi_dung' => $_POST['noi_dung'],
-            'ngay' => $_POST['ngay'],
-            'thang' => $_POST['thang'],
-            'nam' => $_POST['nam'],
-            'yeu_cau' => $yeuCau
-        ];
-        $contentModel->addTimelineItem($data);
-        $message = 'Thêm mốc thời gian thành công';
-        $redirectTab = ($_POST['loai'] ?? '') === 'chuyen_nganh' ? 'chuyen-nganh' : 'co-so-nganh';
-    }
-
-    // Update timeline item
-    elseif ($action === 'update_timeline') {
-        $yeuCau = implode('|', array_filter($_POST['yeu_cau'] ?? []));
-        $data = [
-            'loai' => $_POST['loai'],
-            'thu_tu' => $_POST['thu_tu'],
-            'tieu_de' => $_POST['tieu_de'],
-            'noi_dung' => $_POST['noi_dung'],
-            'ngay' => $_POST['ngay'],
-            'thang' => $_POST['thang'],
-            'nam' => $_POST['nam'],
-            'yeu_cau' => $yeuCau,
-            'trang_thai' => $_POST['trang_thai']
-        ];
-        $contentModel->updateTimelineItem($_POST['id'], $data);
-        $message = 'Cập nhật mốc thời gian thành công';
-        $redirectTab = ($_POST['loai'] ?? '') === 'chuyen_nganh' ? 'chuyen-nganh' : 'co-so-nganh';
-    }
-
-    // Delete timeline item
-    elseif ($action === 'delete_timeline') {
-        $contentModel->deleteTimelineItem($_POST['id']);
-        $message = 'Xóa mốc thời gian thành công';
-        $redirectTab = $_POST['current_tab'] ?? 'co-so-nganh';
-    }
-
-    // Toggle timeline status
-    elseif ($action === 'toggle_timeline') {
-        $result = $contentModel->toggleTimelineStatus($_POST['id']);
-        if ($result) {
-            $message = 'Cập nhật trạng thái thành công';
-        } else {
-            $error = 'Lỗi khi cập nhật trạng thái!';
-        }
-        $redirectTab = $_POST['current_tab'] ?? 'co-so-nganh';
-    }
-
-    // Update notice
-    elseif ($action === 'update_notice') {
-        $data = [
-            'tieu_de' => $_POST['tieu_de'],
-            'noi_dung' => $_POST['noi_dung'],
-            'trang_thai' => $_POST['trang_thai']
-        ];
-        $noticeId = $notice['id'] ?? null;
-        $contentModel->updateNotice($noticeId, $data);
-        $message = 'Cập nhật lưu ý thành công';
-        $redirectTab = 'notice';
-    }
-
-    // Chuyển hướng PRG (Post-Redirect-Get) để tránh tự động gửi lại form khi load lại trang
-    $redirectUrl = $_SERVER['PHP_SELF'] . '?tab=' . urlencode($redirectTab);
-    if ($message) {
-        $redirectUrl .= '&message=' . urlencode($message);
-    }
-    if ($error) {
-        $redirectUrl .= '&error=' . urlencode($error);
-    }
-    header('Location: ' . $redirectUrl);
-    exit;
-}
+require __DIR__ . '/includes/thesis_announcement_actions.php';
 
 // Include header
 include_once __DIR__ . '/../includes/header.php';
@@ -1002,6 +882,9 @@ include_once __DIR__ . '/../includes/header.php';
         <?php include_once __DIR__ . '/includes/sidebar_lanh_dao.php'; ?>
 
         <div class="col-md-10 p-4">
+            <?php include __DIR__ . '/../includes/registration_schedule.php'; ?>
+            <a class="btn btn-outline-primary mb-3" href="cai_dat_thong_so.php#tab-dang-ky">Cấu hình lịch đăng ký</a>
+            <p class="text-muted">Các mốc nhập bên dưới dành cho nộp báo cáo, bảo vệ và các công việc khác. Lịch mở/đóng đăng ký lấy từ cấu hình phía trên; hãy rà lại mốc đăng ký nhập tay cũ nếu có.</p>
             <!-- Welcome Card -->
             <div class="card mb-4 fade-in-up border-0 shadow-sm">
                 <div class="card-body">
@@ -1098,6 +981,11 @@ include_once __DIR__ . '/../includes/header.php';
 
                                 <div class="mb-3">
                                     <label class="form-label form-label-modern">Tiêu đề lưu ý</label>
+                                    <label class="form-label form-label-modern" for="notice-visibility">Hiển thị lưu ý</label>
+                                    <select id="notice-visibility" name="notice_trang_thai" class="form-select mb-3">
+                                        <option value="mo" <?= ($notice['trang_thai'] ?? 'mo') === 'mo' ? 'selected' : '' ?>>Hiển thị khi trang đang công khai</option>
+                                        <option value="khoa" <?= ($notice['trang_thai'] ?? '') === 'khoa' ? 'selected' : '' ?>>Ẩn lưu ý</option>
+                                    </select>
                                     <input type="text" class="form-control form-control-modern" name="notice_tieu_de"
                                         value="<?= htmlspecialchars($notice['tieu_de'] ?? '') ?>">
                                 </div>
@@ -1106,7 +994,7 @@ include_once __DIR__ . '/../includes/header.php';
                                     <label class="form-label form-label-modern">Nội dung lưu ý</label>
                                     <textarea class="form-control form-control-modern" name="notice_noi_dung" rows="5"><?= htmlspecialchars($notice['noi_dung'] ?? '') ?></textarea>
                                     <div class="form-text">
-                                        Có hỗ trợ HTML cơ bản: &lt;b&gt;, &lt;i&gt;, &lt;u&gt;, &lt;br&gt;, &lt;p&gt;
+                                        Nội dung văn bản, giữ xuống dòng; không hỗ trợ HTML. Có thể ẩn lưu ý riêng với trạng thái trang.
                                     </div>
                                 </div>
 

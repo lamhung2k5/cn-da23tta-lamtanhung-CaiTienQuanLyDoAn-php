@@ -1,6 +1,6 @@
 ﻿<?php
-session_start();
 require_once __DIR__ . '/bootstrap.php';
+$facultyMembers = (new GiangVienModel())->getDirectory();
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -1115,64 +1115,7 @@ require_once __DIR__ . '/bootstrap.php';
 
         <!-- Faculty Grid -->
         <div class="row" id="facultyGrid">
-            <?php
-            $faculty_members = require_once __DIR__ . '/config/faculty_members.php';
-            $totalMembers = count($faculty_members);
-
-            foreach ($faculty_members as $index => $member) {
-                // Check if lecturer exists in database by joining with nguoi_dung table
-                $gvModel = new GiangVienModel();
-                $nguoiDungModel = new NguoiDungModel();
-
-                // First find user by email
-                $user = $nguoiDungModel->findByEmail($member['email']);
-                $existing = null;
-
-                if ($user) {
-                    // Then find lecturer profile by user ID
-                    $existing = $gvModel->getByNguoiDungId($user['id']);
-                }
-
-                // Lấy thông tin từ database nếu có, nếu không thì dùng từ config
-                $displayPhone = $member['phone']; // Mặc định từ config
-                $avatarContent = '<i class="bi bi-person-circle"></i>'; // Mặc định
-            
-                // Nếu có trong database và có số điện thoại, ưu tiên từ database
-                if ($existing && !empty($existing['so_dien_thoai'])) {
-                    $displayPhone = $existing['so_dien_thoai'];
-                }
-
-                // Kiểm tra ảnh đại diện
-                if ($existing && !empty($existing['avatar'])) {
-                    $avatarPath = 'uploads/avatars/' . $existing['avatar'];
-                    if (file_exists($avatarPath)) {
-                        $avatarContent = '<img src="' . $avatarPath . '" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">';
-                    }
-                }
-
-                // Get position class for filtering
-                $positionClass = strtolower(str_replace(' ', '-', $member['position']));
-
-                echo '<div class="col-lg-4 col-md-5 col-sm-12 mb-4 faculty-item" data-position="' . htmlspecialchars($member['position']) . '" data-name="' . strtolower(htmlspecialchars($member['name'])) . '">';
-                echo '<div class="faculty-card">';
-                echo '<div class="faculty-avatar">';
-                echo $avatarContent;
-                echo '</div>';
-                echo '<div class="faculty-content">';
-                echo '<div class="faculty-info"><strong style="color: #d2691e;">Họ tên:</strong> <span>' . htmlspecialchars($member['name']) . '</span></div>';
-                echo '<div class="faculty-info"><strong style="color: #d2691e;">Chức vụ:</strong> <span>' . htmlspecialchars($member['position']) . '</span></div>';
-                echo '<div class="faculty-info"><strong style="color: #d2691e;">Số nội bộ:</strong> <span>' . htmlspecialchars($member['room']) . '</span></div>';
-                echo '<div class="faculty-info"><strong style="color: #d2691e;">Điện thoại:</strong> <span>' . htmlspecialchars($displayPhone) . '</span></div>';
-                echo '<div class="faculty-info"><strong style="color: #d2691e;">Email:</strong> <span>' . htmlspecialchars($member['email']) . '</span></div>';
-
-                // Luôn hiển thị link danh sách đề tài cho tất cả giảng viên
-                echo '<a href="giang_vien_chi_tiet_v2.php?email=' . urlencode($member['email']) . '" class="btn-detail">Danh sách đề tài</a>';
-
-                echo '</div>';
-                echo '</div>';
-                echo '</div>';
-            }
-            ?>
+            <?php include __DIR__ . '/includes/public_faculty_grid.php'; ?>
         </div>
 
         <!-- No Results Message (hidden by default) -->
@@ -1269,11 +1212,11 @@ require_once __DIR__ . '/bootstrap.php';
 
             if (html.getAttribute('data-theme') === 'dark') {
                 html.setAttribute('data-theme', 'light');
-                themeIcon.className = 'bi bi-moon-fill';
+                if (themeIcon) themeIcon.className = 'bi bi-moon-fill';
                 localStorage.setItem('theme', 'light');
             } else {
                 html.setAttribute('data-theme', 'dark');
-                themeIcon.className = 'bi bi-sun-fill';
+                if (themeIcon) themeIcon.className = 'bi bi-sun-fill';
                 localStorage.setItem('theme', 'dark');
             }
         }
@@ -1286,11 +1229,11 @@ require_once __DIR__ . '/bootstrap.php';
             if (!savedTheme) {
                 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                     html.setAttribute('data-theme', 'dark');
-                    themeIcon.className = 'bi bi-sun-fill';
+                    if (themeIcon) themeIcon.className = 'bi bi-sun-fill';
                 }
             } else if (savedTheme === 'dark') {
                 html.setAttribute('data-theme', 'dark');
-                themeIcon.className = 'bi bi-sun-fill';
+                if (themeIcon) themeIcon.className = 'bi bi-sun-fill';
             }
         });
     </script>

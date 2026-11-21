@@ -7,6 +7,53 @@ require_once 'BaseModel.php';
 
 class GiangVienModel extends BaseModel {
     protected $table = 'giang_vien';
+
+    public function getDirectory($publicOnly = true, $id = null) {
+        $sql = "SELECT gv.id,gv.nguoi_dung_id,gv.ma_giang_vien,gv.hoc_ham_hoc_vi,gv.khoa,gv.chuyen_mon,
+            gv.so_dien_thoai,gv.chuc_vu_cong_khai,gv.so_noi_bo,gv.hien_thi_cong_khai,
+            nd.ho_ten,nd.email,nd.trang_thai,vt.ma_vai_tro
+            FROM giang_vien gv JOIN nguoi_dung nd ON nd.id=gv.nguoi_dung_id
+            JOIN vai_tro vt ON vt.id=nd.vai_tro_id
+            WHERE vt.ma_vai_tro IN ('giang_vien','lanh_dao')";
+        if ($publicOnly) { $sql .= " AND nd.trang_thai='active' AND gv.hien_thi_cong_khai=1"; }
+        $params = [];
+        if ($id !== null) { $sql .= ' AND gv.id=?'; $params[] = $id; }
+        return $this->query($sql . ' ORDER BY nd.ho_ten,gv.id', $params);
+    }
+
+    public function getPublicProfile($id) {
+        return $this->getDirectory(true, $id)[0] ?? null;
+    }
+
+    public function updateDirectoryProfile($id, array $input) {
+        $fields = ['chuc_vu_cong_khai'=>100, 'so_noi_bo'=>30, 'hoc_ham_hoc_vi'=>50,
+            'khoa'=>255, 'chuyen_mon'=>255, 'so_dien_thoai'=>20];
+        $data = [];
+        foreach ($fields as $field=>$limit) {
+            $value = $input[$field] ?? '';
+            if (!is_string($value) || mb_strlen(trim($value), 'UTF-8') > $limit) {
+                throw new DomainException('Thông tin hồ sơ không hợp lệ hoặc vượt độ dài cho phép.');
+            }
+            $data[$field] = trim($value);
+        }
+        if (!in_array($data['chuc_vu_cong_khai'], ['Giảng viên','Trưởng khoa','Phó Trưởng khoa'], true)) {
+            throw new DomainException('Chức vụ công khai không hợp lệ.');
+        }
+        $visible = $input['hien_thi_cong_khai'] ?? '0';
+        if (!in_array($visible, ['0','1'], true)) { throw new DomainException('Trạng thái công khai không hợp lệ.'); }
+        $data['hien_thi_cong_khai'] = (int)$visible;
+        $profile = $this->queryOne("SELECT gv.id FROM giang_vien gv JOIN nguoi_dung nd ON nd.id=gv.nguoi_dung_id
+            JOIN vai_tro vt ON vt.id=nd.vai_tro_id WHERE gv.id=? AND vt.ma_vai_tro IN ('giang_vien','lanh_dao')", [$id]);
+        if (!$profile) { throw new DomainException('Không tìm thấy hồ sơ giảng viên hợp lệ.'); }
+        return $this->update($id, $data);
+    }
+
+    public function getPublicTopics($lecturerId, $type = null) {
+        $sql = "SELECT * FROM de_tai WHERE giang_vien_id=? AND trang_thai='da_duyet'";
+        $params = [$lecturerId];
+        if (in_array($type, ['co_so_nganh','chuyen_nganh'], true)) { $sql .= ' AND he_dao_tao=?'; $params[] = $type; }
+        return $this->query($sql . ' ORDER BY created_at DESC,id DESC', $params);
+    }
     
     /**
      * Tạo profile giảng viên

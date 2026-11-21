@@ -7,7 +7,45 @@ require_once 'BaseModel.php';
 
 class ThongBaoModel extends BaseModel {
     protected $table = 'thong_bao';
-    
+
+    public function getPublicAnnouncement($id, $preview = false) {
+        $row = $this->queryOne('SELECT * FROM thong_bao WHERE id=? AND nguoi_nhan_id IS NULL', [$id]);
+        return $row && ($preview || ThongBaoPolicy::state($row) === 'active') ? $row : null;
+    }
+
+    public function listPublicForManagement($search = '', $state = '') {
+        $rows = $this->query('SELECT * FROM thong_bao WHERE nguoi_nhan_id IS NULL ORDER BY created_at DESC,id DESC');
+        return array_values(array_filter($rows, static function ($row) use ($search, $state) {
+            return ($state === '' || ThongBaoPolicy::state($row) === $state)
+                && ($search === '' || mb_stripos($row['tieu_de'] . ' ' . $row['noi_dung'], $search, 0, 'UTF-8') !== false);
+        }));
+    }
+
+    public function savePublicAnnouncement($id, array $input) {
+        $data = ['tieu_de'=>ThongBaoPolicy::text($input['tieu_de'] ?? '', 'Tiêu đề', 500, true),
+            'noi_dung'=>ThongBaoPolicy::text($input['noi_dung'] ?? '', 'Nội dung', 15000, true),
+            'trang_thai'=>ThongBaoPolicy::visibility($input['trang_thai'] ?? 'khoa'), 'loai_thong_bao'=>'thong_bao', 'link'=>null];
+        $data += ThongBaoPolicy::dates($input);
+        $data['loai'] = $input['loai'] ?? 'info';
+        if (!in_array($data['loai'], ['info','success','warning','danger'], true)) { throw new DomainException('Loại thông báo không hợp lệ.'); }
+        if ($id !== null) {
+            $id = ThongBaoPolicy::positiveId($id);
+            if (!$this->getPublicAnnouncement($id, true)) { throw new DomainException('Không tìm thấy thông báo công khai.'); }
+            $this->update($id, $data);
+            return $id;
+        }
+        return $this->insert($data + ['nguoi_nhan_id'=>null]);
+    }
+
+    public function changePublicAnnouncement($id, $action) {
+        $id = ThongBaoPolicy::positiveId($id);
+        $row = $this->getPublicAnnouncement($id, true);
+        if (!$row) { throw new DomainException('Không tìm thấy thông báo công khai.'); }
+        if ($action === 'delete') { return $this->delete($id); }
+        if ($action === 'toggle_status') { return $this->update($id, ['trang_thai'=>$row['trang_thai'] === 'mo' ? 'khoa' : 'mo']); }
+        throw new DomainException('Thao tác không hợp lệ.');
+    }
+
     /**
      * Tạo thông báo mới
      */
@@ -21,19 +59,19 @@ class ThongBaoModel extends BaseModel {
             'da_doc' => 0
         ]);
     }
-    
+
     /**
      * Lấy thông báo của người dùng
      */
     public function getThongBaoByNguoiDung($nguoiDungId, $limit = 10) {
-        $sql = "SELECT * FROM {$this->table} 
-                WHERE nguoi_nhan_id = :nguoi_nhan_id 
-                ORDER BY created_at DESC 
+        $sql = "SELECT * FROM {$this->table}
+                WHERE nguoi_nhan_id = :nguoi_nhan_id
+                ORDER BY created_at DESC,id DESC
                 LIMIT {$limit}";
-        
+
         return $this->query($sql, ['nguoi_nhan_id' => $nguoiDungId]);
     }
-    
+
     /**
      * Đếm thông báo chưa đọc
      */
@@ -43,14 +81,14 @@ class ThongBaoModel extends BaseModel {
             'da_doc' => 0
         ]);
     }
-    
+
     /**
      * Đánh dấu đã đọc
      */
     public function danhDauDaDoc($thongBaoId) {
         return $this->update($thongBaoId, ['da_doc' => 1]);
     }
-    
+
     /**
      * Đánh dấu tất cả đã đọc
      */
@@ -59,7 +97,7 @@ class ThongBaoModel extends BaseModel {
         $stmt = $this->db->prepare($sql);
         return $stmt->execute(['nguoi_nhan_id' => $nguoiDungId]);
     }
-    
+
     /**
      * Gửi thông báo khi đề tài được duyệt
      */
@@ -67,7 +105,7 @@ class ThongBaoModel extends BaseModel {
         // Lấy nguoi_dung_id từ giang_vien_id
         $sql = "SELECT nguoi_dung_id FROM giang_vien WHERE id = :id";
         $gv = $this->queryOne($sql, ['id' => $giangVienId]);
-        
+
         if ($gv) {
             return $this->taoThongBao(
                 $gv['nguoi_dung_id'],
@@ -79,14 +117,14 @@ class ThongBaoModel extends BaseModel {
         }
         return false;
     }
-    
+
     /**
      * Gửi thông báo khi đề tài bị từ chối
      */
     public function thongBaoDeTaiBiTuChoi($giangVienId, $tenDeTai, $lyDo) {
         $sql = "SELECT nguoi_dung_id FROM giang_vien WHERE id = :id";
         $gv = $this->queryOne($sql, ['id' => $giangVienId]);
-        
+
         if ($gv) {
             return $this->taoThongBao(
                 $gv['nguoi_dung_id'],
@@ -98,14 +136,14 @@ class ThongBaoModel extends BaseModel {
         }
         return false;
     }
-    
+
     /**
      * Gửi thông báo khi sinh viên đăng ký đề tài
      */
     public function thongBaoSinhVienDangKy($giangVienId, $tenSinhVien, $tenDeTai) {
         $sql = "SELECT nguoi_dung_id FROM giang_vien WHERE id = :id";
         $gv = $this->queryOne($sql, ['id' => $giangVienId]);
-        
+
         if ($gv) {
             return $this->taoThongBao(
                 $gv['nguoi_dung_id'],
@@ -117,14 +155,14 @@ class ThongBaoModel extends BaseModel {
         }
         return false;
     }
-    
+
     /**
      * Gửi thông báo khi giảng viên duyệt sinh viên
      */
     public function thongBaoSinhVienDuocDuyet($sinhVienId, $tenDeTai) {
         $sql = "SELECT nguoi_dung_id FROM sinh_vien WHERE id = :id";
         $sv = $this->queryOne($sql, ['id' => $sinhVienId]);
-        
+
         if ($sv) {
             return $this->taoThongBao(
                 $sv['nguoi_dung_id'],
@@ -136,14 +174,14 @@ class ThongBaoModel extends BaseModel {
         }
         return false;
     }
-    
+
     /**
      * Gửi thông báo khi giảng viên từ chối sinh viên
      */
     public function thongBaoSinhVienBiTuChoi($sinhVienId, $tenDeTai, $lyDo) {
         $sql = "SELECT nguoi_dung_id FROM sinh_vien WHERE id = :id";
         $sv = $this->queryOne($sql, ['id' => $sinhVienId]);
-        
+
         if ($sv) {
             return $this->taoThongBao(
                 $sv['nguoi_dung_id'],
@@ -155,36 +193,36 @@ class ThongBaoModel extends BaseModel {
         }
         return false;
     }
-    
+
     /**
      * Lấy thông báo công khai (cho trang chủ)
      * Chỉ lấy thông báo đang trong khoảng thời gian hiệu lực
      */
     public function getThongBaoCongKhai($limit = 5) {
         $today = date('Y-m-d');
-        $sql = "SELECT * FROM {$this->table} 
+        $sql = "SELECT * FROM {$this->table}
                 WHERE nguoi_nhan_id IS NULL
                 AND trang_thai = 'mo'
                 AND (ngay_bat_dau IS NULL OR ngay_bat_dau <= '{$today}')
                 AND (ngay_ket_thuc IS NULL OR ngay_ket_thuc >= '{$today}')
-                ORDER BY created_at DESC 
+                ORDER BY created_at DESC,id DESC
                 LIMIT {$limit}";
-        
+
         return $this->query($sql);
     }
-    
+
     /**
      * Lấy TẤT CẢ thông báo công khai (cho trang quản lý - không lọc theo ngày)
      */
     public function getAllThongBaoCongKhai($limit = 50) {
-        $sql = "SELECT * FROM {$this->table} 
+        $sql = "SELECT * FROM {$this->table}
                 WHERE nguoi_nhan_id IS NULL
-                ORDER BY created_at DESC 
+                ORDER BY created_at DESC,id DESC
                 LIMIT {$limit}";
-        
+
         return $this->query($sql);
     }
-    
+
     /**
      * Tạo thông báo công khai
      */
@@ -193,36 +231,36 @@ class ThongBaoModel extends BaseModel {
         $pdo = $this->db->prepare("INSERT INTO {$this->table} (nguoi_nhan_id, tieu_de, noi_dung, loai, link, da_doc, loai_thong_bao, ngay_bat_dau, ngay_ket_thuc, trang_thai) VALUES (NULL, ?, ?, ?, ?, 0, ?, ?, ?, ?)");
         return $pdo->execute([$tieuDe, $noiDung, $loai, $link, $loaiThongBao, $ngayBatDau, $ngayKetThuc, $trangThai]);
     }
-    
+
     /**
      * Lấy thông báo đồ án đang hoạt động (theo ngày và trạng thái)
      */
     public function getThongBaoDoAnActive($limit = 5) {
         $today = date('Y-m-d');
-        $sql = "SELECT * FROM {$this->table} 
-                WHERE nguoi_nhan_id IS NULL 
+        $sql = "SELECT * FROM {$this->table}
+                WHERE nguoi_nhan_id IS NULL
                 AND loai_thong_bao = 'thong_bao_do_an'
                 AND trang_thai = 'mo'
                 AND (ngay_bat_dau IS NULL OR ngay_bat_dau <= '{$today}')
                 AND (ngay_ket_thuc IS NULL OR ngay_ket_thuc >= '{$today}')
-                ORDER BY created_at DESC 
+                ORDER BY created_at DESC,id DESC
                 LIMIT {$limit}";
-        
+
         return $this->query($sql);
     }
-    
+
     /**
      * Lấy thông báo đồ án
      */
     public function getThongBaoDoAn($limit = 5) {
-        $sql = "SELECT * FROM {$this->table} 
+        $sql = "SELECT * FROM {$this->table}
                 WHERE nguoi_nhan_id IS NULL AND loai_thong_bao = 'thong_bao_do_an'
-                ORDER BY created_at DESC 
+                ORDER BY created_at DESC,id DESC
                 LIMIT {$limit}";
-        
+
         return $this->query($sql);
     }
-    
+
     /**
      * Cập nhật thông báo
      */
@@ -231,7 +269,7 @@ class ThongBaoModel extends BaseModel {
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([$tieuDe, $noiDung, $loai, $link, $loaiThongBao, $ngayBatDau, $ngayKetThuc, $trangThai, $id]);
     }
-    
+
     /**
      * Khóa/Mở thông báo
      */
@@ -243,20 +281,20 @@ class ThongBaoModel extends BaseModel {
         }
         return false;
     }
-    
+
     /**
      * Kiểm tra trang thái của trang thông báo đồ án
      * Trả về true nếu đang mở, false nếu đang khóa
      */
     public function kiemTraTrangThaiThongBaoDoAn() {
         $today = date('Y-m-d');
-        $sql = "SELECT COUNT(*) as dem FROM {$this->table} 
-                WHERE nguoi_nhan_id IS NULL 
+        $sql = "SELECT COUNT(*) as dem FROM {$this->table}
+                WHERE nguoi_nhan_id IS NULL
                 AND loai_thong_bao = 'thong_bao_do_an'
                 AND trang_thai = 'mo'
                 AND (ngay_bat_dau IS NULL OR ngay_bat_dau <= '{$today}')
                 AND (ngay_ket_thuc IS NULL OR ngay_ket_thuc >= '{$today}')";
-        
+
         $result = $this->queryOne($sql);
         return ($result['dem'] ?? 0) > 0;
     }
